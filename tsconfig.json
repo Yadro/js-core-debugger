@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "lib": ["dom", "es2015", "es2015.generator", "es2016.array.include"],
+    "sourceMap": true
+  },
+  "exclude": [
+    "node_modules",
+    "node_modules/acorn/dist/acorn.d.ts"
+  ],
+  "include": [
+    "node_modules/@types/acorn/index.d.ts",
+    "node_modules/@types/estree/index.d.ts"
+  ]
+}
