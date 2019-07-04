@@ -13,6 +13,8 @@ import {
 } from "estree";
 import {CodeGenTemplates, CodeNode} from "./templates";
 
+type N<T> = Node & T;
+
 export class CoreDebugger {
     public _input: string[];
 
@@ -25,76 +27,58 @@ export class CoreDebugger {
     }
 
     processProgram(programNode: Program) {
-        programNode.body.forEach((funcNode: Node & FunctionDeclaration) => {
+        programNode.body.forEach(funcNode => {
             if (funcNode.type === "FunctionDeclaration") {
-                this.processFuncNode(funcNode);
+                this.processFuncNode(funcNode as N<FunctionDeclaration>);
             }
         })
     }
 
-    processFuncNode(funcNode: (Node & FunctionDeclaration)) {
-        const _paramNodes: CodeNode[] = [];
-
-        funcNode.params.forEach((paramNode: Node & Identifier) => {
+    processFuncNode(funcNode: (N<FunctionDeclaration>)) {
+        funcNode.params.forEach(paramNode => {
             if (paramNode.type === "Identifier") {
-                _paramNodes.push(CodeGenTemplates.identifier(paramNode));
+                this._insertCode(CodeGenTemplates.identifier(paramNode as N<Identifier>));
             }
         });
 
-        const funcBodyNode = funcNode.body as Node & BlockStatement;
-
-        _paramNodes.forEach(param => {
-            this._insertCode(param);
-        });
-
-        this.processBlockStatementNode(funcBodyNode);
+        this.processBlockStatementNode(funcNode.body as N<BlockStatement>);
     }
 
-    processBlockStatementNode(blockNode: (Node & BlockStatement)) {
+    processBlockStatementNode(blockNode: N<BlockStatement>) {
         blockNode.body.forEach(node => {
             switch (node.type) {
                 case "VariableDeclaration":
-                    const varDeclNode = node as Node & VariableDeclaration;
-                    this.processVariableDeclarationNode(varDeclNode);
+                    this.processVariableDeclarationNode(node as N<VariableDeclaration>);
                     break;
                 case "ExpressionStatement":
-                    const exp = node as Node & ExpressionStatement;
-                    this.processExpressionStatement(exp);
+                    this.processExpressionStatement(node as N<ExpressionStatement>);
                     break;
                 case "ReturnStatement":
-                    const ret = node as Node & ReturnStatement;
-                    this.processReturnStatement(ret);
+                    this.processReturnStatement(node as N<ReturnStatement>);
                     break;
             }
         })
     }
 
-    processExpressionStatement(exp: (Node & ExpressionStatement)) {
+    processExpressionStatement(exp: N<ExpressionStatement>) {
         switch (exp.expression.type) {
             case "AssignmentExpression":
-                this._insertCode(CodeGenTemplates.identifier(exp.expression.left as Node & Identifier));
+                this._insertCode(CodeGenTemplates.identifier(exp.expression.left as N<Identifier>));
                 break;
         }
     }
 
-    private processReturnStatement(ret: acorn.Node & ReturnStatement) {
+    private processReturnStatement(ret: N<ReturnStatement>) {
         switch (ret.argument.type) {
             case "Identifier":
-                this._insertCode(CodeGenTemplates.identifier(ret.argument as Node & Identifier));
+                this._insertCode(CodeGenTemplates.identifier(ret.argument as N<Identifier>));
                 break;
         }
     }
 
-    processVariableDeclarationNode(variableNode: (Node & VariableDeclaration)) {
-        const _varDeclNodes: CodeNode[] = [];
-
+    processVariableDeclarationNode(variableNode: (N<VariableDeclaration>)) {
         variableNode.declarations.forEach(varDecl => {
-            const varDeclNode = varDecl as Node & VariableDeclarator;
-            _varDeclNodes.push(CodeGenTemplates.varDeclNode(varDeclNode))
-        });
-
-        _varDeclNodes.forEach(v => {
-            this._insertCode(v);
+            this._insertCode(CodeGenTemplates.varDeclNode(varDecl as N<VariableDeclarator>))
         });
     }
 
