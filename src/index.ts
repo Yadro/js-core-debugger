@@ -21,32 +21,17 @@ export class CoreDebugger {
     codeGenerate(input: string) {
         this._input = input.split('\n');
         const parser = new Parser({ locations: true }, input);
-        const astTree = parser.parse() as unknown as Program;
+        const astTree = parser.parse() as unknown as N<BlockStatement>;
 
-        this.processProgram(astTree);
-    }
-
-    processProgram(programNode: Program) {
-        programNode.body.forEach(funcNode => {
-            if (funcNode.type === "FunctionDeclaration") {
-                this.processFuncNode(funcNode as N<FunctionDeclaration>);
-            }
-        })
-    }
-
-    processFuncNode(funcNode: (N<FunctionDeclaration>)) {
-        funcNode.params.forEach(paramNode => {
-            if (paramNode.type === "Identifier") {
-                this._insertCode(CodeGenTemplates.identifier(paramNode as N<Identifier>));
-            }
-        });
-
-        this.processBlockStatementNode(funcNode.body as N<BlockStatement>);
+        this.processBlockStatementNode(astTree);
     }
 
     processBlockStatementNode(blockNode: N<BlockStatement>) {
         blockNode.body.forEach(node => {
             switch (node.type) {
+                case "FunctionDeclaration":
+                    this.processFuncNode(node as N<FunctionDeclaration>);
+                    break;
                 case "VariableDeclaration":
                     this.processVariableDeclarationNode(node as N<VariableDeclaration>);
                     break;
@@ -58,6 +43,16 @@ export class CoreDebugger {
                     break;
             }
         })
+    }
+
+    processFuncNode(funcNode: N<FunctionDeclaration>) {
+        funcNode.params.forEach(paramNode => {
+            if (paramNode.type === "Identifier") {
+                this._insertCode(CodeGenTemplates.identifier(paramNode as N<Identifier>));
+            }
+        });
+
+        this.processBlockStatementNode(funcNode.body as N<BlockStatement>);
     }
 
     processExpressionStatement(exp: N<ExpressionStatement>) {
@@ -76,7 +71,7 @@ export class CoreDebugger {
         }
     }
 
-    processVariableDeclarationNode(variableNode: (N<VariableDeclaration>)) {
+    processVariableDeclarationNode(variableNode: N<VariableDeclaration>) {
         variableNode.declarations.forEach(varDecl => {
             this._insertCode(CodeGenTemplates.varDeclNode(varDecl as N<VariableDeclarator>))
         });
