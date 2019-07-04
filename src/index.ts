@@ -1,6 +1,7 @@
 import {Node, Parser} from "acorn";
 import {
-    BlockStatement,
+    AssignmentExpression,
+    BlockStatement, ExpressionStatement,
     Function,
     FunctionDeclaration,
     Identifier,
@@ -36,15 +37,14 @@ export class CoreDebugger {
 
         funcNode.params.forEach((paramNode: Node & Identifier) => {
             if (paramNode.type === "Identifier") {
-                console.log(paramNode);
-                _paramNodes.push(CodeGenTemplates.funcParamNode(paramNode));
+                _paramNodes.push(CodeGenTemplates.identifier(paramNode));
             }
         });
 
         const funcBodyNode = funcNode.body as Node & BlockStatement;
 
         _paramNodes.forEach(param => {
-            this.insertCode(param);
+            this._insertCode(param);
         });
 
         this.processBlockStatementNode(funcBodyNode);
@@ -55,8 +55,19 @@ export class CoreDebugger {
             if (node.type === "VariableDeclaration") {
                 const varDeclNode = node as Node & VariableDeclaration;
                 this.processVariableDeclarationNode(varDeclNode);
+            } else if (node.type === "ExpressionStatement") {
+                const exp = node as Node & ExpressionStatement;
+                this.processExpressionStatement(exp);
             }
         })
+    }
+
+    processExpressionStatement(exp: (Node & ExpressionStatement)) {
+        switch (exp.expression.type) {
+            case "AssignmentExpression":
+                this._insertCode(CodeGenTemplates.identifier(exp.expression.left as Node & Identifier));
+                break;
+        }
     }
 
     processVariableDeclarationNode(variableNode: (Node & VariableDeclaration)) {
@@ -68,11 +79,11 @@ export class CoreDebugger {
         });
 
         _varDeclNodes.forEach(v => {
-            this.insertCode(v);
+            this._insertCode(v);
         });
     }
 
-    insertCode(codeNode: CodeNode) {
+    private _insertCode(codeNode: CodeNode) {
         this._input[codeNode.line - 1] += codeNode.code;
     }
 }

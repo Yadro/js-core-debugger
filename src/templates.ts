@@ -18,9 +18,9 @@ export const CodeGenTemplates = {
             line: varNode.loc.start.line,
         })
     },
-    funcParamNode(funcParamNode: Node & Identifier): CodeNode {
+    identifier(funcParamNode: Node & Identifier): CodeNode {
         return ({
-            code: codeStatement('funcParam',
+            code: codeStatement('ident',
                 [funcParamNode.loc.start.line, q(funcParamNode.name), funcParamNode.name]),
             line: funcParamNode.loc.start.line,
         });

@@ -7,9 +7,9 @@ const code = `function func(a, b) {
 \treturn d;
 }`;
 
-const result = `function func(a, b) {__$YD$__funcParam(1,'a',a);__$YD$__funcParam(1,'b',b);
+const result = `function func(a, b) {__$YD$__ident(1,'a',a);__$YD$__ident(1,'b',b);
 \tvar c = 10, i = 0;__$YD$__varDecl(2,'c',c);__$YD$__varDecl(2,'i',i);
-\ta += b;
+\ta += b;__$YD$__ident(3,'a',a);
 \tvar d = a + c;__$YD$__varDecl(4,'d',d);
 \treturn d;
 }`;
