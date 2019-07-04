@@ -6,7 +6,7 @@ import {
     FunctionDeclaration,
     Identifier,
     Pattern,
-    Program,
+    Program, ReturnStatement,
     SourceLocation,
     VariableDeclaration,
     VariableDeclarator
@@ -52,12 +52,19 @@ export class CoreDebugger {
 
     processBlockStatementNode(blockNode: (Node & BlockStatement)) {
         blockNode.body.forEach(node => {
-            if (node.type === "VariableDeclaration") {
-                const varDeclNode = node as Node & VariableDeclaration;
-                this.processVariableDeclarationNode(varDeclNode);
-            } else if (node.type === "ExpressionStatement") {
-                const exp = node as Node & ExpressionStatement;
-                this.processExpressionStatement(exp);
+            switch (node.type) {
+                case "VariableDeclaration":
+                    const varDeclNode = node as Node & VariableDeclaration;
+                    this.processVariableDeclarationNode(varDeclNode);
+                    break;
+                case "ExpressionStatement":
+                    const exp = node as Node & ExpressionStatement;
+                    this.processExpressionStatement(exp);
+                    break;
+                case "ReturnStatement":
+                    const ret = node as Node & ReturnStatement;
+                    this.processReturnStatement(ret);
+                    break;
             }
         })
     }
@@ -66,6 +73,14 @@ export class CoreDebugger {
         switch (exp.expression.type) {
             case "AssignmentExpression":
                 this._insertCode(CodeGenTemplates.identifier(exp.expression.left as Node & Identifier));
+                break;
+        }
+    }
+
+    private processReturnStatement(ret: acorn.Node & ReturnStatement) {
+        switch (ret.argument.type) {
+            case "Identifier":
+                this._insertCode(CodeGenTemplates.identifier(ret.argument as Node & Identifier));
                 break;
         }
     }
