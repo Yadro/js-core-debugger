@@ -36,6 +36,8 @@ export class CoreDebugger {
             case "BlockStatement":
                 this.processBlockStatement(node);
                 break;
+                
+            // TODO process Declaration
             case "FunctionDeclaration":
                 this.processFunctionDeclaration(node);
                 break;
