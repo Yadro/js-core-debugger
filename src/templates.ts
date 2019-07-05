@@ -1,4 +1,3 @@
-import {Node} from "acorn";
 import { FunctionDeclaration, Identifier, Literal, VariableDeclarator } from "estree";
 import { N, PureType } from "./types";
 
@@ -9,17 +8,17 @@ export interface CodeNode {
 
 const prefix = "__$YD$__";
 const q = (str: string) => `'${str}'`;
-const codeStatement = (funcName: string, params: (number|string)[]) => `${prefix}${funcName}(${params.join(',')});`;
+const codeStatement = (funcName: string, params: PureType[]) => `${prefix}${funcName}(${params.join(',')});`;
 
 export const CodeGenTemplates = {
-    varDeclNode(node: Node & VariableDeclarator): CodeNode {
+    varDeclNode(node: N<VariableDeclarator>): CodeNode {
         const varId = node.id as Identifier;
         return ({
             code: codeStatement('varDecl', [node.loc.start.line, q(varId.name), varId.name]),
             line: node.loc.start.line,
         })
     },
-    identifier(node: Node & Identifier): CodeNode {
+    identifier(node: N<Identifier>): CodeNode {
         return ({
             code: codeStatement('ident',
                 [node.loc.start.line, q(node.name), node.name]),
@@ -33,7 +32,7 @@ export const CodeGenTemplates = {
             line: node.loc.start.line,
         })
     },
-    runFuncForDebug(node: Node & FunctionDeclaration, args: PureType[]) {
+    runFuncForDebug(node: N<FunctionDeclaration>, args: PureType[]) {
         let strArguments = '';
         if (args.length) {
             strArguments = args.join(',');
