@@ -32,7 +32,7 @@ export const CodeGenTemplates = {
             strArguments = args.join(',');
         }
         return ({
-            code: `${node.id.name}(${strArguments});`,
+            code: `;${node.id.name}(${strArguments});`,
             line: node.body.loc.end.line,
         })
     }
