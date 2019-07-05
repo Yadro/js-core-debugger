@@ -1,12 +1,13 @@
 import {Node, Parser} from "acorn";
 import {
     AssignmentExpression,
-    BlockStatement, ExpressionStatement,
+    BlockStatement,
+    ExpressionStatement,
     Function,
     FunctionDeclaration,
     Identifier,
     Pattern,
-    Program, ReturnStatement,
+    ReturnStatement,
     SourceLocation,
     VariableDeclaration,
     VariableDeclarator
@@ -42,6 +43,11 @@ export class CoreDebugger {
                     break;
                 case "ReturnStatement":
                     this.processReturnStatement(body as N<ReturnStatement>);
+                    break;
+                case "ForStatement":
+                case "WhileStatement":
+                case "DoWhileStatement":
+                    this.processBlockStatement(body.body as N<BlockStatement>);
                     break;
             }
         })
