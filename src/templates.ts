@@ -42,7 +42,7 @@ export const CodeGenTemplates = {
 export const injectPrefix = `
 var __$YD$__result = {};
 function __$YD$__ident(line, identifier, value) {
-    const key = '' + line + ':' + identifier;
+    var key = '' + line + ':' + identifier;
     if (__$YD$__result[key]) {
         if (Array.isArray(__$YD$__result[key])) {
             __$YD$__result[key].push(value);

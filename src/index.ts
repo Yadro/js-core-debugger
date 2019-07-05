@@ -73,7 +73,7 @@ export class CoreDebugger {
                 const [line, name] = v.split(':');
                 const value = this.overrideVariables[v];
                 if (p.loc.start.line === +line && p.name === name) {
-                    defineArguments.push(value);
+                    defineArguments.push(JSON.stringify(value));
                     break;
                 }
             }
