@@ -44,19 +44,20 @@ test('Parse code', () => {
 test('Parse and Execute', () => {
     const coreDebugger = new CoreDebugger();
     coreDebugger.codeGenerate(code, {
-        "1:key": 'd',
+        "1:key": 'b',
         "1:array": ['a', 'b', 'c', 'd', 'e', 'f'],
     });
     console.log(coreDebugger._input.join('\n'));
     const result = coreDebugger.execute();
     const expected = {
-        "1:array": ["a", "b", "c", "d", "e", "f"],
-        "1:key": "d",
-        "2:low": 0,
-        "3:high": 5,
-        "5:mid": [2, 3],
-        "6:value": ["c", "d"],
-        "8:low": 1
+        "1:array": [["a", "b", "c", "d", "e", "f"]],
+        "1:key": ["b"],
+        "2:low": [0],
+        "3:high": [5],
+        "5:mid": [2, 0, 1],
+        "6:value": ["c", "a", "b"],
+        "8:low": [1],
+        "10:high": [1],
     };
     expect(result).toStrictEqual(expected);
 });

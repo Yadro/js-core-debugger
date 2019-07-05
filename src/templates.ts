@@ -50,14 +50,10 @@ export const injectPrefix = `
 var __$YD$__result = {};
 function __$YD$__ident(line, identifier, value) {
     var key = '' + line + ':' + identifier;
-    if (__$YD$__result[key]) {
-        if (Array.isArray(__$YD$__result[key])) {
-            __$YD$__result[key].push(value);
-        } else {
-            __$YD$__result[key] = [__$YD$__result[key], value];
-        }
+    if (__$YD$__result[key] && Array.isArray(__$YD$__result[key])) {
+        __$YD$__result[key].push(value);
     } else {
-        __$YD$__result[key] = value;
+        __$YD$__result[key] = [value];
     }
 }
 var __$YD$__varDecl = __$YD$__ident;
