@@ -1,4 +1,4 @@
-import {Node, Parser} from "acorn";
+import {Parser} from "acorn";
 import {
     AssignmentExpression,
     BlockStatement,
@@ -6,9 +6,10 @@ import {
     Function,
     FunctionDeclaration,
     Identifier,
+    IfStatement,
     Pattern,
     ReturnStatement,
-    SourceLocation,
+    Statement,
     VariableDeclaration,
     VariableDeclarator
 } from "estree";
@@ -29,28 +30,47 @@ export class CoreDebugger {
         this.processBlockStatement(astTree);
     }
 
+    private processStatement(node: N<Statement>) {
+        switch (node.type) {
+            case "BlockStatement":
+                this.processBlockStatement(node);
+                break;
+            case "FunctionDeclaration":
+                this.processFunctionDeclaration(node);
+                break;
+            case "VariableDeclaration":
+                this.processVariableDeclaration(node);
+                break;
+            case "ExpressionStatement":
+                this.processExpressionStatement(node);
+                break;
+            case "ReturnStatement":
+                this.processReturnStatement(node);
+                break;
+            case "IfStatement":
+                this.processIfStatement(node);
+                break;
+            case "ForStatement":
+            case "WhileStatement":
+            case "DoWhileStatement":
+                this.processBlockStatement(node.body as N<BlockStatement>);
+                break;
+        }
+    }
+
     private processBlockStatement(node: N<BlockStatement>) {
-        node.body.forEach(body => {
-            switch (body.type) {
-                case "FunctionDeclaration":
-                    this.processFunctionDeclaration(body as N<FunctionDeclaration>);
-                    break;
-                case "VariableDeclaration":
-                    this.processVariableDeclaration(body as N<VariableDeclaration>);
-                    break;
-                case "ExpressionStatement":
-                    this.processExpressionStatement(body as N<ExpressionStatement>);
-                    break;
-                case "ReturnStatement":
-                    this.processReturnStatement(body as N<ReturnStatement>);
-                    break;
-                case "ForStatement":
-                case "WhileStatement":
-                case "DoWhileStatement":
-                    this.processBlockStatement(body.body as N<BlockStatement>);
-                    break;
-            }
-        })
+        if (node.body) {
+            node.body.forEach(body => {
+                this.processStatement(body as N<Statement>);
+            })
+        }
+    }
+
+    private processIfStatement(node: N<IfStatement>) {
+        this.processStatement(node.consequent as N<BlockStatement>);
+        if (node.alternate) {
+            this.processStatement(node.alternate as N<BlockStatement>);
+        }
     }
 
     private processFunctionDeclaration(node: N<FunctionDeclaration>) {
