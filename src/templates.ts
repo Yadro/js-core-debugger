@@ -2,8 +2,6 @@ import {Node} from "acorn";
 import {FunctionDeclaration, Identifier, VariableDeclarator} from "estree";
 import {PureType} from "./types";
 
-type N<T> = Node & T;
-
 export interface CodeNode {
     code: string;
     line: number;
@@ -43,8 +41,17 @@ export const CodeGenTemplates = {
 // language=JavaScript
 export const injectPrefix = `
 var __$YD$__result = {};
-function __$YD$__ident(line, identifier, value){
-    __$YD$__result['' + line + ':' + identifier] = value;
+function __$YD$__ident(line, identifier, value) {
+    const key = '' + line + ':' + identifier;
+    if (__$YD$__result[key]) {
+        if (Array.isArray(__$YD$__result[key])) {
+            __$YD$__result[key].push(value);
+        } else {
+            __$YD$__result[key] = [__$YD$__result[key], value];
+        }
+    } else {
+        __$YD$__result[key] = value;
+    }
 }
 var __$YD$__varDecl = __$YD$__ident;
 `;
