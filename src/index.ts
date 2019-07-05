@@ -11,7 +11,7 @@ import {
     VariableDeclaration,
     VariableDeclarator
 } from "estree";
-import {CodeGenTemplates, CodeNode} from "./templates";
+import {CodeGenTemplates, CodeNode, injectPostfix, injectPrefix} from "./templates";
 
 type N<T> = Node & T;
 
@@ -45,14 +45,16 @@ export class CoreDebugger {
         })
     }
 
-    processFuncNode(funcNode: N<FunctionDeclaration>) {
-        funcNode.params.forEach(paramNode => {
+    processFuncNode(node: N<FunctionDeclaration>) {
+        node.params.forEach(paramNode => {
             if (paramNode.type === "Identifier") {
                 this._insertCode(CodeGenTemplates.identifier(paramNode as N<Identifier>));
             }
         });
 
-        this.processBlockStatementNode(funcNode.body as N<BlockStatement>);
+        this.processBlockStatementNode(node.body as N<BlockStatement>);
+
+        this._insertCode(CodeGenTemplates.runFuncForDebug(node));
     }
 
     processExpressionStatement(exp: N<ExpressionStatement>) {
@@ -79,5 +81,12 @@ export class CoreDebugger {
 
     private _insertCode(codeNode: CodeNode) {
         this._input[codeNode.line - 1] += codeNode.code;
+    }
+
+    execute() {
+        let result = this._input.join('\n');
+        const code = `${injectPrefix}${result}\n${injectPostfix}`;
+        console.log(code);
+        return eval(code);
     }
 }

@@ -19,3 +19,18 @@ test('CoreDebugger', () => {
     coreDebugger.codeGenerate(code);
     expect(coreDebugger._input.join('\n')).toBe(result);
 });
+
+test('execute', () => {
+    const coreDebugger = new CoreDebugger();
+    coreDebugger.codeGenerate(code);
+    const result = coreDebugger.execute();
+    const expected = {
+        "1:a": undefined,
+        "1:b": undefined,
+        "2:c": 10,
+        "2:i": 0,
+        "3:a": null,
+        "4:d": null
+    };
+    expect(result).toBe(expected);
+});
