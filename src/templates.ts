@@ -1,5 +1,6 @@
 import {Node} from "acorn";
 import {FunctionDeclaration, Identifier, VariableDeclarator} from "estree";
+import {PureType} from "./types";
 
 type N<T> = Node & T;
 
@@ -27,9 +28,13 @@ export const CodeGenTemplates = {
             line: node.loc.start.line,
         });
     },
-    runFuncForDebug(node: Node & FunctionDeclaration) {
+    runFuncForDebug(node: Node & FunctionDeclaration, args: PureType[]) {
+        let strArguments = '';
+        if (args.length) {
+            strArguments = args.join(',');
+        }
         return ({
-            code: `${node.id.name}();`,
+            code: `${node.id.name}(${strArguments});`,
             line: node.body.loc.end.line,
         })
     }

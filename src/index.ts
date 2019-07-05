@@ -12,14 +12,16 @@ import {
     VariableDeclarator
 } from "estree";
 import {CodeGenTemplates, CodeNode, injectPostfix, injectPrefix} from "./templates";
+import {N, PureType, StringMap} from "./types";
 
-type N<T> = Node & T;
 
 export class CoreDebugger {
     public _input: string[];
+    public overrideVariables: StringMap<PureType> = {};
 
-    codeGenerate(input: string) {
+    codeGenerate(input: string, vars: StringMap<PureType> = {}) {
         this._input = input.split('\n');
+        this.overrideVariables = vars;
         const parser = new Parser({ locations: true }, input);
         const astTree = parser.parse() as unknown as N<BlockStatement>;
 
@@ -46,15 +48,32 @@ export class CoreDebugger {
     }
 
     private processFunctionDeclaration(node: N<FunctionDeclaration>) {
-        node.params.forEach(param => {
-            if (param.type === "Identifier") {
-                this._insertCode(CodeGenTemplates.identifier(param as N<Identifier>));
-            }
+        const params = node.params.filter(p => p.type === "Identifier") as N<Identifier>[];
+
+        params.forEach(param => {
+            this._insertCode(CodeGenTemplates.identifier(param));
         });
 
         this.processBlockStatement(node.body as N<BlockStatement>);
 
-        this._insertCode(CodeGenTemplates.runFuncForDebug(node));
+        this.insertFunctionExecute(node, params);
+    }
+
+    private insertFunctionExecute(node: N<FunctionDeclaration>, nodes: N<Identifier>[]) {
+        const defineArguments: PureType[] = [];
+
+        nodes.forEach(p => {
+            for (let v in this.overrideVariables) {
+                const [line, name] = v.split(':');
+                const value = this.overrideVariables[v];
+                if (p.loc.start.line === +line && p.name === name) {
+                    defineArguments.push(value);
+                    break;
+                }
+            }
+        });
+
+        this._insertCode(CodeGenTemplates.runFuncForDebug(node, defineArguments));
     }
 
     private processExpressionStatement(node: N<ExpressionStatement>) {
