@@ -23,70 +23,69 @@ export class CoreDebugger {
         const parser = new Parser({ locations: true }, input);
         const astTree = parser.parse() as unknown as N<BlockStatement>;
 
-        this.processBlockStatementNode(astTree);
+        this.processBlockStatement(astTree);
     }
 
-    processBlockStatementNode(blockNode: N<BlockStatement>) {
-        blockNode.body.forEach(node => {
-            switch (node.type) {
+    private processBlockStatement(node: N<BlockStatement>) {
+        node.body.forEach(body => {
+            switch (body.type) {
                 case "FunctionDeclaration":
-                    this.processFuncNode(node as N<FunctionDeclaration>);
+                    this.processFunctionDeclaration(body as N<FunctionDeclaration>);
                     break;
                 case "VariableDeclaration":
-                    this.processVariableDeclarationNode(node as N<VariableDeclaration>);
+                    this.processVariableDeclaration(body as N<VariableDeclaration>);
                     break;
                 case "ExpressionStatement":
-                    this.processExpressionStatement(node as N<ExpressionStatement>);
+                    this.processExpressionStatement(body as N<ExpressionStatement>);
                     break;
                 case "ReturnStatement":
-                    this.processReturnStatement(node as N<ReturnStatement>);
+                    this.processReturnStatement(body as N<ReturnStatement>);
                     break;
             }
         })
     }
 
-    processFuncNode(node: N<FunctionDeclaration>) {
-        node.params.forEach(paramNode => {
-            if (paramNode.type === "Identifier") {
-                this._insertCode(CodeGenTemplates.identifier(paramNode as N<Identifier>));
+    private processFunctionDeclaration(node: N<FunctionDeclaration>) {
+        node.params.forEach(param => {
+            if (param.type === "Identifier") {
+                this._insertCode(CodeGenTemplates.identifier(param as N<Identifier>));
             }
         });
 
-        this.processBlockStatementNode(node.body as N<BlockStatement>);
+        this.processBlockStatement(node.body as N<BlockStatement>);
 
         this._insertCode(CodeGenTemplates.runFuncForDebug(node));
     }
 
-    processExpressionStatement(exp: N<ExpressionStatement>) {
-        switch (exp.expression.type) {
+    private processExpressionStatement(node: N<ExpressionStatement>) {
+        switch (node.expression.type) {
             case "AssignmentExpression":
-                this._insertCode(CodeGenTemplates.identifier(exp.expression.left as N<Identifier>));
+                this._insertCode(CodeGenTemplates.identifier(node.expression.left as N<Identifier>));
                 break;
         }
     }
 
-    private processReturnStatement(ret: N<ReturnStatement>) {
-        switch (ret.argument.type) {
+    private processReturnStatement(node: N<ReturnStatement>) {
+        switch (node.argument.type) {
             case "Identifier":
-                this._insertCode(CodeGenTemplates.identifier(ret.argument as N<Identifier>));
+                this._insertCode(CodeGenTemplates.identifier(node.argument as N<Identifier>));
                 break;
         }
     }
 
-    processVariableDeclarationNode(variableNode: N<VariableDeclaration>) {
-        variableNode.declarations.forEach(varDecl => {
-            this._insertCode(CodeGenTemplates.varDeclNode(varDecl as N<VariableDeclarator>))
+    private processVariableDeclaration(node: N<VariableDeclaration>) {
+        node.declarations.forEach(declaration => {
+            this._insertCode(CodeGenTemplates.varDeclNode(declaration as N<VariableDeclarator>))
         });
     }
 
-    private _insertCode(codeNode: CodeNode) {
-        this._input[codeNode.line - 1] += codeNode.code;
+    private _insertCode(node: CodeNode) {
+        this._input[node.line - 1] += node.code;
     }
 
     execute() {
         let result = this._input.join('\n');
         const code = `${injectPrefix}${result}\n${injectPostfix}`;
-        console.log(code);
         return eval(code);
     }
 }

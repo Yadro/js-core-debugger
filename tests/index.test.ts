@@ -12,15 +12,15 @@ const result = `function func(a, b) {__$YD$__ident(1,'a',a);__$YD$__ident(1,'b',
 \ta += b;__$YD$__ident(3,'a',a);
 \tvar d = a + c;__$YD$__varDecl(4,'d',d);
 \treturn d;__$YD$__ident(5,'d',d);
-}`;
+}func();`;
 
-test('CoreDebugger', () => {
+test('Parse code', () => {
     const coreDebugger = new CoreDebugger();
     coreDebugger.codeGenerate(code);
     expect(coreDebugger._input.join('\n')).toBe(result);
 });
 
-test('execute', () => {
+test('Parse and Execute', () => {
     const coreDebugger = new CoreDebugger();
     coreDebugger.codeGenerate(code);
     const result = coreDebugger.execute();
@@ -29,8 +29,8 @@ test('execute', () => {
         "1:b": undefined,
         "2:c": 10,
         "2:i": 0,
-        "3:a": null,
-        "4:d": null
+        "3:a": NaN,
+        "4:d": NaN,
     };
-    expect(result).toBe(expected);
+    expect(result).toStrictEqual(expected);
 });
