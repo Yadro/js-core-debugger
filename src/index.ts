@@ -7,6 +7,7 @@ import {
     FunctionDeclaration,
     Identifier,
     IfStatement,
+    Literal,
     Pattern,
     ReturnStatement,
     Statement,
@@ -111,13 +112,22 @@ export class CoreDebugger {
     }
 
     private processReturnStatement(node: N<ReturnStatement>) {
-        switch (node.argument.type) {
-            case "Identifier":
-                this._insertCode(CodeGenTemplates.identifier(node.argument as N<Identifier>));
-                break;
+        if (node.argument) {
+            switch (node.argument.type) {
+                case "Identifier":
+                    this._insertCode(CodeGenTemplates.identifier(node.argument as N<Identifier>));
+                    break;
+                case "Literal":
+                    this.processLiteral(node.argument as N<Literal>);
+                    break;
+            }
         }
     }
 
+    private processLiteral(node: N<Literal>) {
+        this._insertCode(CodeGenTemplates.literal(node));
+    }
+    
     private processVariableDeclaration(node: N<VariableDeclaration>) {
         node.declarations.forEach(declaration => {
             this._insertCode(CodeGenTemplates.varDeclNode(declaration as N<VariableDeclarator>))
@@ -131,6 +141,7 @@ export class CoreDebugger {
     execute() {
         let result = this._input.join('\n');
         const code = `${injectPrefix}${result}\n${injectPostfix}`;
+        console.log(code);
         return eval(code);
     }
 }

@@ -1,6 +1,6 @@
 import {Node} from "acorn";
-import {FunctionDeclaration, Identifier, VariableDeclarator} from "estree";
-import {PureType} from "./types";
+import { FunctionDeclaration, Identifier, Literal, VariableDeclarator } from "estree";
+import { N, PureType } from "./types";
 
 export interface CodeNode {
     code: string;
@@ -26,6 +26,13 @@ export const CodeGenTemplates = {
             line: node.loc.start.line,
         });
     },
+    literal(node: N<Literal>): CodeNode {
+        return ({
+            code: codeStatement('ident',
+                [node.loc.start.line, q('return'), JSON.stringify(node.value)]),
+            line: node.loc.start.line,
+        })
+    },
     runFuncForDebug(node: Node & FunctionDeclaration, args: PureType[]) {
         let strArguments = '';
         if (args.length) {
@@ -34,7 +41,7 @@ export const CodeGenTemplates = {
         return ({
             code: `;${node.id.name}(${strArguments});`,
             line: node.body.loc.end.line,
-        })
+        });
     }
 };
 
