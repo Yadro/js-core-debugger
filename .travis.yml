@@ -5,7 +5,7 @@ node_js:
 cache: npm
 
 before_install:
-  - nvm ls
+  - nvm install 10.16.0
   - nvm use 10.16.0
 
 install:
