@@ -110,3 +110,24 @@ test('Test code with error', () => {
     };
     expect(result).toStrictEqual(expected);
 });
+
+// language=JavaScript
+const codeWithLambda = `
+function test() {
+    var r = 0;
+    var arr = [1, 2, 3];
+    arr.forEach(i => {
+        r += i;
+    });
+    var m = arr.map(i => i + r);
+}`;
+test('Test code with lambda', () => {
+    const result = generate(codeWithLambda);
+    const expected = {
+        "3:r": [0],
+        "4:arr": [[1, 2, 3]],
+        "6:r": [1, 3, 6],
+        "8:m": [[7, 8, 9]]
+    };
+    expect(result).toStrictEqual(expected);
+});

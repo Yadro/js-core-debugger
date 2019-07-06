@@ -1,8 +1,11 @@
 import {Parser} from "acorn";
 import {
+    ArrowFunctionExpression,
     AssignmentExpression,
     BlockStatement,
-    ExpressionStatement, ForStatement,
+    Expression,
+    ExpressionStatement,
+    ForStatement,
     Function,
     FunctionDeclaration,
     Identifier,
@@ -109,11 +112,23 @@ export class CoreDebugger {
     }
 
     private processExpressionStatement(node: N<ExpressionStatement>) {
-        switch (node.expression.type) {
+        this.processExpression(node.expression as N<Expression>);
+    }
+
+    private processExpression(node: N<Expression>) {
+        switch (node.type) {
             case "AssignmentExpression":
-                this._insertCode(CodeGenTemplates.identifier(node.expression.left as N<Identifier>));
+                this._insertCode(CodeGenTemplates.identifier(node.left as N<Identifier>));
                 break;
+            case "CallExpression":
+                node.arguments.forEach(arg => {
+                    this.processArrowFunctionExpression(arg as N<ArrowFunctionExpression>);
+                });
         }
+    }
+
+    private processArrowFunctionExpression(node: N<ArrowFunctionExpression>) {
+        this.processBlockStatement(node.body as N<BlockStatement>);
     }
 
     private processReturnStatement(node: N<ReturnStatement>) {
