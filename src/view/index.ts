@@ -1,7 +1,8 @@
 import { editor, KeyCode } from 'monaco-editor/esm/vs/editor/editor.api';
+import {CoreDebugger} from "../index";
 
 const codeEditor = editor.create(document.getElementById("editor"), {
-    value: "function hello() {\n\talert('Hello world!');\n}",
+    value: "function hello(a, b) {\n\treturn a + b;\n}",
     language: "javascript",
     minimap: {
         enabled: false,
@@ -9,7 +10,12 @@ const codeEditor = editor.create(document.getElementById("editor"), {
 });
 
 codeEditor.addCommand(KeyCode.US_BACKTICK, () => {
-    debugView.setValue(codeEditor.getValue());
+    const coreDebugger = new CoreDebugger();
+    coreDebugger.codeGenerate(codeEditor.getValue());
+    console.log(coreDebugger._input);
+    const debugInto = coreDebugger.execute();
+    console.log(debugInto);
+    debugView.setValue(JSON.stringify(debugInto, null, 2));
 });
 
 const debugView = editor.create(document.getElementById("debug-view"), {
