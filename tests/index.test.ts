@@ -90,9 +90,9 @@ test('Test loops', () => {
     const result = generate(codeWithLoops);
     const expected = {
         "3:a": [10],
-        "3:i": [10, 8, 6, 4, 2],
-        "5:a": [10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
-        "8:a": [2, 4, 8, 16],
+        "4:i": [10, 8, 6, 4, 2],
+        "5:a": [10, 8, 6, 4, 2],
+        "8:a": [4, 8, 16],
         "11:a": [11, 6, 1, -4]
     };
     expect(result).toStrictEqual(expected);
