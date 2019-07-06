@@ -6,12 +6,14 @@ import {ViewResult} from "../viewResult";
 const viewResult = new ViewResult();
 
 const codeEditor = editor.create(document.getElementById("editor"), {
-    value: "function hello(a, b) {\n\treturn a + b;\n}",
+    value: "function hello() {\n\tvar a = 1;\n\twhile(a < 10) {\n\t\ta *= 2;\n\t}\n}",
     language: "javascript",
     minimap: {
         enabled: false,
     },
 });
+
+restoreCode();
 
 const debugView = editor.create(document.getElementById("debug-view"), {
     language: "text",
@@ -40,7 +42,21 @@ function viewDebug() {
         const debugObject = coreDebugger.execute();
         console.log(debugObject);
         debugView.setValue(viewResult.process(debugObject));
+        saveCode();
     } catch (e) {
         debugView.setValue("Something went wrong with code execute. Check console F12");
+    }
+}
+
+codeEditor.addCommand(KeyCode.Ctrl | KeyCode.KEY_S, saveCode);
+
+function saveCode() {
+    window.localStorage.setItem('code', codeEditor.getValue());
+}
+
+function restoreCode() {
+    const restoredValue = window.localStorage.getItem('code');
+    if (restoredValue) {
+        codeEditor.setValue(restoredValue);
     }
 }
