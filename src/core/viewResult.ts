@@ -1,4 +1,4 @@
-import {DebugObject, PureType} from "./types";
+import {DebugObject, PureType} from "../types";
 
 
 export class ViewResult {

@@ -1,5 +1,6 @@
-import { CoreDebugger } from '../src';
+import { CoreDebugger } from '../src/core/coreDebugger';
 import {DebugObject} from "../src/types";
+
 const coreDebugger = new CoreDebugger();
 
 function generate(code: string): DebugObject {
@@ -7,6 +8,7 @@ function generate(code: string): DebugObject {
     return coreDebugger.execute();
 }
 
+// language=JavaScript
 const code = `function search(key, array) {
     var low = 0;
     var high = array.length - 1;
@@ -24,6 +26,7 @@ const code = `function search(key, array) {
     return 1;
 }`;
 
+// language=JavaScript
 const resultCode = `function search(key, array) {__$YD$__ident(1,'key',key);__$YD$__ident(1,'array',array);
     var low = 0;__$YD$__varDecl(2,'low',low);
     var high = array.length - 1;__$YD$__varDecl(3,'high',high);

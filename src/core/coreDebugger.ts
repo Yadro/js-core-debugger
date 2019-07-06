@@ -18,7 +18,7 @@ import {
     VariableDeclarator
 } from "estree";
 import {CodeGenTemplates, CodeNode, injectPostfix, injectPrefix} from "./templates";
-import {DebugObject, N, PureType, StringMap} from "./types";
+import {DebugObject, N, PureType, StringMap} from "../types";
 
 
 export class CoreDebugger {

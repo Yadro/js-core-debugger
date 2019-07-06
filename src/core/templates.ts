@@ -1,5 +1,5 @@
 import { FunctionDeclaration, Identifier, Literal, VariableDeclarator } from "estree";
-import { N, PureType } from "./types";
+import { N, PureType } from "../types";
 
 export interface CodeNode {
     code: string;

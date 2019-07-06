@@ -1,6 +1,6 @@
 import { editor, KeyCode } from 'monaco-editor/esm/vs/editor/editor.api';
-import {CoreDebugger} from "../index";
-import {ViewResult} from "../viewResult";
+import {CoreDebugger} from "../core/coreDebugger";
+import {ViewResult} from "../core/viewResult";
 
 
 const viewResult = new ViewResult();
