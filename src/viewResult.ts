@@ -1,4 +1,4 @@
-import {DebugObject} from "./types";
+import {DebugObject, PureType} from "./types";
 
 
 export class ViewResult {
@@ -7,13 +7,35 @@ export class ViewResult {
         for (let key in debugObject) {
             const [line, variableName] = key.split(':');
             const lineNum = +line - 1;
-            const values = debugObject[key];
             if (!Array.isArray(result[lineNum])) {
                 result[lineNum] = [];
             }
-            result[lineNum].push(`${variableName} = ${values.join(' | ')}`);
+            const values = ViewResult.valueToString(debugObject[key]);
+            result[lineNum].push(`${variableName} = ${values}`);
         }
 
-        return result.map(line => line.join(' ; ')).join('\n');
+        return result.map(line => line.join('; ').concat(';')).join('\n');
+    }
+
+    static valueToString(rawValues: PureType[]): string {
+        return rawValues.map((value: PureType) => {
+            if (Array.isArray(value)) {
+                return ViewResult.arrayToString(value);
+            } else if (typeof value === "string") {
+                return `'${value}'`;
+            } else {
+                return '' + value;
+            }
+        }).join(' | ');
+    }
+
+    static arrayToString(array: any[]): string {
+        const arrValues = array.map(value => {
+            if (typeof value === "string") {
+                return `'${value}'`;
+            }
+            return '' + value;
+        }).join(', ');
+        return `[${arrValues}]`;
     }
 }
