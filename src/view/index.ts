@@ -23,7 +23,6 @@ codeEditor.addCommand(KeyCode.US_BACKTICK, () => {
 });
 
 const debugView = editor.create(document.getElementById("debug-view"), {
-    value: "function hello() {\n\talert('Hello world!');\n}",
     language: "text",
     minimap: {
         enabled: false,
