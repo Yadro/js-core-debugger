@@ -2,7 +2,7 @@ import {Parser} from "acorn";
 import {
     AssignmentExpression,
     BlockStatement,
-    ExpressionStatement,
+    ExpressionStatement, ForStatement,
     Function,
     FunctionDeclaration,
     Identifier,
@@ -56,6 +56,9 @@ export class CoreDebugger {
             case "ForStatement":
             case "WhileStatement":
             case "DoWhileStatement":
+                if ((node as N<ForStatement>).init) {
+                    this.processStatement((node as N<ForStatement>).init as N<BlockStatement>);
+                }
                 this.processBlockStatement(node.body as N<BlockStatement>);
                 break;
         }
