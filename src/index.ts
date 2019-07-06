@@ -15,7 +15,7 @@ import {
     VariableDeclarator
 } from "estree";
 import {CodeGenTemplates, CodeNode, injectPostfix, injectPrefix} from "./templates";
-import {N, PureType, StringMap} from "./types";
+import {DebugObject, N, PureType, StringMap} from "./types";
 
 
 export class CoreDebugger {
@@ -140,7 +140,7 @@ export class CoreDebugger {
         this._input[node.line - 1] += node.code;
     }
 
-    execute() {
+    execute(): DebugObject {
         let result = this._input.join('\n');
         const code = `${injectPrefix}${result}\n${injectPostfix}`;
         console.log(code);
