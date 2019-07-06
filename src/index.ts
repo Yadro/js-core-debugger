@@ -124,6 +124,10 @@ export class CoreDebugger {
                 node.arguments.forEach(arg => {
                     this.processArrowFunctionExpression(arg as N<ArrowFunctionExpression>);
                 });
+                break;
+            case "MemberExpression":
+                throw new Error("Not implemented");
+                break;
         }
     }
 
