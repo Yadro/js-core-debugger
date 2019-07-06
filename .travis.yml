@@ -4,6 +4,9 @@ node_js:
 
 cache: npm
 
+before_install:
+  - npm install -g npm@6.9.0
+
 install:
   - npm i
 
