@@ -147,6 +147,8 @@ export class CoreDebugger {
         let result = this._input.join('\n');
         const code = `${injectPrefix}${result}\n${injectPostfix}`;
         console.log(code);
-        return eval(code);
+        const debug = eval(code);
+        console.log(debug);
+        return debug;
     }
 }

@@ -8,26 +8,27 @@ export interface CodeNode {
 
 const prefix = "__$YD$__";
 const q = (str: string) => `'${str}'`;
-const codeStatement = (funcName: string, params: PureType[]) => `${prefix}${funcName}(${params.join(',')});`;
+const arr = (str: string) => `[${str}]`;
+const defineFn = (funcName: string, params: PureType[]) => `${prefix}${funcName}(${params.join(',')});`;
 
 export const CodeGenTemplates = {
     varDeclNode(node: N<VariableDeclarator>): CodeNode {
         const varId = node.id as Identifier;
         return ({
-            code: codeStatement('varDecl', [node.loc.start.line, q(varId.name), varId.name]),
+            code: defineFn('varDecl', [node.loc.start.line, q(varId.name), varId.name]),
             line: node.loc.start.line,
         })
     },
     identifier(node: N<Identifier>): CodeNode {
         return ({
-            code: codeStatement('ident',
+            code: defineFn('ident',
                 [node.loc.start.line, q(node.name), node.name]),
             line: node.loc.start.line,
         });
     },
     literal(node: N<Literal>): CodeNode {
         return ({
-            code: codeStatement('ident',
+            code: defineFn('ident',
                 [node.loc.start.line, q('return'), JSON.stringify(node.value)]),
             line: node.loc.start.line,
         })
@@ -37,8 +38,9 @@ export const CodeGenTemplates = {
         if (args.length) {
             strArguments = args.join(',');
         }
+        const fnName = node.id.name;
         return ({
-            code: `;${node.id.name}(${strArguments});`,
+            code: defineFn('exec', [node.body.loc.start.line, q(fnName), fnName, arr(strArguments)]),
             line: node.body.loc.end.line,
         });
     }
@@ -56,6 +58,13 @@ function __$YD$__ident(line, identifier, value) {
     }
 }
 var __$YD$__varDecl = __$YD$__ident;
+function __$YD$__exec(line, fnName, fn, args) {
+    try {
+        fn.call(args);
+    } catch(err) {
+        var key = '' + line + ':' + fnName;
+        __$YD$__result[key] = err.toString();
+    }
+}
 `;
-// language=JavaScript
 export const injectPostfix = `__$YD$__result;`;

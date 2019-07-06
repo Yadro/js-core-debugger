@@ -97,3 +97,16 @@ test('Test loops', () => {
     };
     expect(result).toStrictEqual(expected);
 });
+
+// language=JavaScript
+const codeWithError = `
+function test() {
+    throwError();
+}`;
+test('Test code with error', () => {
+    const result = generate(codeWithError);
+    const expected = {
+        "2:test": "ReferenceError: throwError is not defined"
+    };
+    expect(result).toStrictEqual(expected);
+});
