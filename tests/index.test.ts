@@ -1,4 +1,11 @@
 import { CoreDebugger } from '../src';
+import {DebugObject} from "../src/types";
+const coreDebugger = new CoreDebugger();
+
+function generate(code: string): DebugObject {
+    coreDebugger.codeGenerate(code);
+    return coreDebugger.execute();
+}
 
 const code = `function search(key, array) {
     var low = 0;
@@ -58,6 +65,34 @@ test('Parse and Execute', () => {
         "6:value": ["c", "a", "b"],
         "8:low": [1],
         "10:high": [1],
+    };
+    expect(result).toStrictEqual(expected);
+});
+
+
+// language=JavaScript
+const codeWithLoops = `
+function loop() {
+    var a = 10;
+    for (let i = a; i > 0; i-=2) {
+        a = i;
+    }
+    while (a < 10) {
+        a = a * 2;
+    }
+    do {
+        a -= 5;
+    } while( a > 0);
+    return a;
+}
+`;
+test('Test loops', () => {
+    const result = generate(codeWithLoops);
+    const expected = {
+        "3:a": [10],
+        "5:a": [10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
+        "8:a": [2, 4, 8, 16],
+        "11:a": [11, 6, 1, -4]
     };
     expect(result).toStrictEqual(expected);
 });
