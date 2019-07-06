@@ -23,7 +23,7 @@ export class ViewResult {
         }
         return rawValues.map((value: PureType) => {
             if (Array.isArray(value)) {
-                return ViewResult.arrayToString(value);
+                return JSON.stringify(value);
             } else if (typeof value === "string") {
                 return `'${value}'`;
             } else {
