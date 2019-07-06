@@ -60,7 +60,7 @@ function __$YD$__ident(line, identifier, value) {
 var __$YD$__varDecl = __$YD$__ident;
 function __$YD$__exec(line, fnName, fn, args) {
     try {
-        fn.call(args);
+        fn.apply(null, args);
     } catch(err) {
         var key = '' + line + ':' + fnName;
         __$YD$__result[key] = err.toString();

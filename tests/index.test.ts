@@ -54,7 +54,9 @@ test('Parse and Execute', () => {
         "1:key": 'b',
         "1:array": ['a', 'b', 'c', 'd', 'e', 'f'],
     });
-    console.log(coreDebugger._input.join('\n'));
+    const expectedCode = resultCode.concat(`__$YD$__exec(1,'search',search,["b",["a","b","c","d","e","f"]]);`);
+    expect(coreDebugger._input.join('\n')).toBe(expectedCode);
+
     const result = coreDebugger.execute();
     const expected = {
         "1:array": [["a", "b", "c", "d", "e", "f"]],
