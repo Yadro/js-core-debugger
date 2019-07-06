@@ -1,0 +1,11 @@
+language: javascript
+node_js:
+  - "10"
+
+cache: npm
+
+install:
+  - npm ci
+
+build:
+  - npm run test
