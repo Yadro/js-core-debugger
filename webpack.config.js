@@ -5,7 +5,7 @@ const dist = path.resolve(__dirname, 'dist');
 
 module.exports = {
     entry: {
-        app: './src/ui/index.ts',
+        app: './src/view/index.ts',
     },
     module: {
         rules: [
