@@ -1,0 +1,22 @@
+body {
+    margin: 0;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.main-view {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    height: 90%;
+    border: 1px solid grey;
+}
+
+#debug-view,
+#editor {
+    flex: 1;
+    height: 100%;
+}

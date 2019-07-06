@@ -3,14 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <title>Realtime inline debugger</title>
+    <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
 
-<div id="editor" style="float:left;width:700px;height:700px"></div>
-<div id="debug-view" style="float:left;width:700px;height:700px"></div>
 <button id="debug">View values</button>
 
-<script src="bundle.js"></script>
+<div class="main-view">
+    <div id="editor"></div>
+    <div id="debug-view"></div>
+</div>
+
+<script src="./bundle.js"></script>
 
 </body>
 </html>
