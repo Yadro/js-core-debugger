@@ -17,7 +17,10 @@ export class ViewResult {
         return result.map(line => line.join('; ').concat(';')).join('\n');
     }
 
-    static valueToString(rawValues: PureType[]): string {
+    static valueToString(rawValues: PureType[] | string): string {
+        if (typeof rawValues === "string") {
+            return rawValues;
+        }
         return rawValues.map((value: PureType) => {
             if (Array.isArray(value)) {
                 return ViewResult.arrayToString(value);

@@ -128,7 +128,12 @@ export class CoreDebugger {
     }
 
     private processArrowFunctionExpression(node: N<ArrowFunctionExpression>) {
-        this.processBlockStatement(node.body as N<BlockStatement>);
+        if (node.expression) {
+            throw new Error("Not implemented");
+        }
+        if (node.body) {
+            this.processBlockStatement(node.body as N<BlockStatement>);
+        }
     }
 
     private processReturnStatement(node: N<ReturnStatement>) {
