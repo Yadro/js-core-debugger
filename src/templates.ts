@@ -16,8 +16,8 @@ export const CodeGenTemplates = {
         const varId = node.id as Identifier;
         return ({
             code: defineFn('varDecl', [node.loc.start.line, q(varId.name), varId.name]),
-            line: node.loc.start.line,
-        })
+            line: node.loc.end.line,
+        });
     },
     identifier(node: N<Identifier>): CodeNode {
         return ({
@@ -31,7 +31,7 @@ export const CodeGenTemplates = {
             code: defineFn('ident',
                 [node.loc.start.line, q('return'), JSON.stringify(node.value)]),
             line: node.loc.start.line,
-        })
+        });
     },
     runFuncForDebug(node: N<FunctionDeclaration>, args: PureType[]) {
         let strArguments = '';

@@ -88,7 +88,7 @@ function loop() {
     return a;
 }
 `;
-test('Test loops', () => {
+test('Test code with loops', () => {
     const result = generate(codeWithLoops);
     const expected = {
         "3:a": [10],
@@ -130,6 +130,38 @@ test('Test code with lambda', () => {
         "4:arr": [[1, 2, 3]],
         "6:r": [1, 3, 6],
         "8:m": [[7, 8, 9]]
+    };
+    expect(result).toStrictEqual(expected);
+});
+
+
+// language=JavaScript
+const codeWithDeclarations = `
+function test() {
+    var c = {
+        с: "с"
+    };
+    var a = {};
+    var b = { b: "b" };
+}`;
+const expectedCodeWithDeclarations = `
+function test() {
+    var c = {
+        с: "с"
+    };__$YD$__varDecl(3,'c',c);
+    var a = {};__$YD$__varDecl(6,'a',a);
+    var b = { b: "b" };__$YD$__varDecl(7,'b',b);
+}__$YD$__exec(2,'test',test,[]);`;
+test('Test code with object declarations', () => {
+    const coreDebugger = new CoreDebugger();
+    coreDebugger.codeGenerate(codeWithDeclarations);
+    expect(coreDebugger._input.join('\n')).toBe(expectedCodeWithDeclarations);
+
+    const result = coreDebugger.execute();
+    const expected = {
+        "3:c": [{"с": "с"}],
+        "6:a": [{}],
+        "7:b": [{"b": "b"}]
     };
     expect(result).toStrictEqual(expected);
 });
