@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "webpack-dev-server",
     "test": "jest"
   },
   "keywords": [],
@@ -11,14 +12,23 @@
   "license": "ISC",
   "devDependencies": {
     "@types/jest": "24.0.15",
+    "css-loader": "3.0.0",
     "jest": "24.8.0",
+    "monaco-editor-webpack-plugin": "1.7.0",
+    "style-loader": "0.23.1",
     "ts-jest": "24.0.2",
-    "typescript": "3.5.2"
+    "ts-loader": "6.0.4",
+    "typescript": "3.5.2",
+    "webpack": "4.35.2",
+    "webpack-cli": "3.3.5",
+    "webpack-dev-server": "3.7.2"
   },
   "jest": {
     "preset": "ts-jest"
   },
   "dependencies": {
-    "acorn": "6.2.0"
+    "@types/estree": "0.0.39",
+    "acorn": "6.2.0",
+    "monaco-editor": "0.17.1"
   }
 }

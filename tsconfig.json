@@ -8,9 +8,5 @@
   "exclude": [
     "node_modules",
     "node_modules/acorn/dist/acorn.d.ts"
-  ],
-  "include": [
-    "node_modules/@types/acorn/index.d.ts",
-    "node_modules/@types/estree/index.d.ts"
   ]
 }
