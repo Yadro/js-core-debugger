@@ -44,7 +44,7 @@ const resultCode = `function search(key, array) {__$YD$__ident(1,'key',key);__$Y
 test('Parse code', () => {
     const coreDebugger = new CoreDebugger();
     coreDebugger.codeGenerate(code);
-    const expected = resultCode.concat(';search();');
+    const expected = resultCode.concat(`__$YD$__exec(1,'search',search,[]);`);
     expect(coreDebugger._input.join('\n')).toBe(expected);
 });
 
