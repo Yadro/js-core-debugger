@@ -35,6 +35,10 @@ module.exports = {
     devServer: {
         contentBase: dist,
         compress: true,
-        port: 9000
+        port: 9000,
+        stats: {
+            chunks: false,
+            modules: false,
+        },
     }
 };
