@@ -17,7 +17,7 @@ import {
     VariableDeclaration,
     VariableDeclarator
 } from "estree";
-import {CodeGenTemplates, CodeNode, injectPostfix, injectPrefix} from "./templates";
+import {CodeGenTemplates, CodeNode, injectPostfix, injectPrefix} from "../generator/templates";
 import {DebugObject, N, PureType, StringMap} from "../types";
 import {Generator} from "../generator";
 

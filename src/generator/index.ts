@@ -1,4 +1,4 @@
-import {CodeGenTemplates, CodeNode} from "../core/templates";
+import {CodeGenTemplates, CodeNode} from "./templates";
 import {N, PureType, StringMap} from "../types";
 import {FunctionDeclaration, Identifier} from "estree";
 
