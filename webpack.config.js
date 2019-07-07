@@ -5,7 +5,7 @@ const dist = path.resolve(__dirname, 'dist');
 
 module.exports = {
     entry: {
-        app: './src/view/coreDebugger.ts',
+        app: './src/view/index.ts',
     },
     module: {
         rules: [
