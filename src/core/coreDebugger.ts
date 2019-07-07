@@ -20,6 +20,7 @@ import {
 import {CodeGenTemplates, CodeNode, injectPostfix, injectPrefix} from "../generator/templates";
 import {DebugObject, N, PureType, StringMap} from "../types";
 import {Generator} from "../generator";
+import {safeEval} from "../utils/safeEval";
 
 
 export class CoreDebugger {
@@ -145,12 +146,9 @@ export class CoreDebugger {
         });
     }
 
-    execute(): DebugObject {
+    async execute(): Promise<DebugObject> {
         const result = this.generator.getInput();
         const code = `${injectPrefix}${result}\n${injectPostfix}`;
-        console.log(code);
-        const debug = eval(code);
-        console.log(debug);
-        return debug;
+        return await safeEval<DebugObject>(code);
     }
 }

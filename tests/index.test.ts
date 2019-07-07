@@ -3,7 +3,7 @@ import {DebugObject} from "../src/types";
 
 const coreDebugger = new CoreDebugger();
 
-function generate(code: string): DebugObject {
+function generate(code: string): Promise<DebugObject> {
     coreDebugger.codeGenerate(code);
     return coreDebugger.execute();
 }
@@ -91,8 +91,8 @@ function loop() {
     return a;
 }
 `;
-test('Test code with loops', () => {
-    const result = generate(codeWithLoops);
+test('Test code with loops', async () => {
+    const result = await generate(codeWithLoops);
     const expected = {
         "3:a": [10],
         "4:i": [10, 8, 6, 4, 2],
@@ -108,8 +108,8 @@ const codeWithError = `
 function test() {
     throwError();
 }`;
-test('Test code with error', () => {
-    const result = generate(codeWithError);
+test('Test code with error', async () => {
+    const result = await generate(codeWithError);
     const expected = {
         "2:test": "ReferenceError: throwError is not defined"
     };
@@ -126,8 +126,8 @@ function test() {
     });
     var m = arr.map(i => i + r);
 }`;
-test('Test code with lambda', () => {
-    const result = generate(codeWithLambda);
+test('Test code with lambda', async () => {
+    const result = await generate(codeWithLambda);
     const expected = {
         "3:r": [0],
         "4:arr": [[1, 2, 3]],

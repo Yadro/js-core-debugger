@@ -4,12 +4,13 @@ import {ViewResult} from "../core/viewResult";
 
 
 class Editor {
-    private viewResult = new ViewResult();
-    private codeEditor: editor.IStandaloneCodeEditor;
-    private debugView: editor.IStandaloneCodeEditor;
+    private readonly viewResult = new ViewResult();
+    private readonly codeEditor: editor.IStandaloneCodeEditor;
+    private readonly debugView: editor.IStandaloneCodeEditor;
 
     constructor() {
-        this.viewDebug = this.viewDebug.bind(this);
+        this.tryToShowDebugInfo = this.tryToShowDebugInfo.bind(this);
+        this.saveCode = this.saveCode.bind(this);
 
         const editorId = document.getElementById("editor");
         const debugViewId = document.getElementById("debug-view");
@@ -23,8 +24,6 @@ class Editor {
             },
         });
         this.codeEditor.addCommand(KeyCode.Ctrl | KeyCode.KEY_S, this.saveCode);
-        this.restoreCode();
-
         this.debugView = editor.create(debugViewId, {
             language: "text",
             minimap: {
@@ -33,37 +32,62 @@ class Editor {
             readOnly: true,
         });
 
+        this.restoreCode();
+
         window.addEventListener("resize", () => {
             this.codeEditor.layout();
             this.debugView.layout();
         });
 
-        debugBtnId.addEventListener("click", this.viewDebug);
-        this.codeEditor.addCommand(KeyCode.US_BACKTICK, this.viewDebug);
+        debugBtnId.addEventListener("click", this.tryToShowDebugInfo);
+        this.codeEditor.addCommand(KeyCode.US_BACKTICK, this.tryToShowDebugInfo);
+        this.handleEditorChanges();
+        this.tryToShowDebugInfo();
     }
 
-    viewDebug() {
+    private handleEditorChanges() {
+        let timoutId;
+        this.codeEditor.onDidChangeModelContent(() => {
+            if (!this.debugView) {
+                return;
+            }
+            if (timoutId) {
+                clearTimeout(timoutId);
+            }
+            timoutId = setTimeout(() => {
+                this.tryToShowDebugInfo();
+            }, 1000);
+        });
+    }
+
+    private async tryToShowDebugInfo(): Promise<void> {
         const coreDebugger = new CoreDebugger();
         try {
             coreDebugger.codeGenerate(this.codeEditor.getValue());
         } catch (e) {
+            if (e.name === "SyntaxError") {
+                this.debugView.setValue("Can't parse it");
+                return;
+            }
             this.debugView.setValue("Something went wrong with code generate. Check console F12");
             return;
         }
         try {
-            const debugObject = coreDebugger.execute();
+            const debugObject = await coreDebugger.execute();
             this.debugView.setValue(this.viewResult.process(debugObject));
             this.saveCode();
+            return;
         } catch (e) {
             this.debugView.setValue("Something went wrong with code execute. Check console F12");
+            return;
         }
     }
 
-    saveCode() {
+    private saveCode() {
         window.localStorage.setItem('code', this.codeEditor.getValue());
     }
 
-    restoreCode() {
+    private restoreCode() {
         const restoredValue = window.localStorage.getItem('code');
         if (restoredValue) {
             this.codeEditor.setValue(restoredValue);
