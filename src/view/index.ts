@@ -3,65 +3,73 @@ import {CoreDebugger} from "../core/coreDebugger";
 import {ViewResult} from "../core/viewResult";
 
 
-const viewResult = new ViewResult();
+class Editor {
+    private viewResult = new ViewResult();
+    private codeEditor: editor.IStandaloneCodeEditor;
+    private debugView: editor.IStandaloneCodeEditor;
 
-const codeEditor = editor.create(document.getElementById("editor"), {
-    value: "function hello() {\n\tvar a = 1;\n\twhile(a < 10) {\n\t\ta *= 2;\n\t}\n}",
-    language: "javascript",
-    minimap: {
-        enabled: false,
-    },
-});
+    constructor() {
+        const editorId = document.getElementById("editor");
+        const debugViewId = document.getElementById("debug-view");
+        const debugBtnId = document.getElementById("debug");
 
-restoreCode();
+        this.codeEditor = editor.create(editorId, {
+            value: "function hello() {\n\tvar a = 1;\n\twhile(a < 10) {\n\t\ta *= 2;\n\t}\n}",
+            language: "javascript",
+            minimap: {
+                enabled: false,
+            },
+        });
+        this.codeEditor.addCommand(KeyCode.Ctrl | KeyCode.KEY_S, this.saveCode);
+        this.restoreCode();
 
-const debugView = editor.create(document.getElementById("debug-view"), {
-    language: "text",
-    minimap: {
-        enabled: false,
-    },
-    readOnly: true,
-});
+        this.debugView = editor.create(debugViewId, {
+            language: "text",
+            minimap: {
+                enabled: false,
+            },
+            readOnly: true,
+        });
 
-const debugBtn = document.getElementById("debug");
+        window.addEventListener("resize", () => {
+            this.codeEditor.layout();
+            this.debugView.layout();
+        });
 
-debugBtn.addEventListener("click", viewDebug);
-
-codeEditor.addCommand(KeyCode.US_BACKTICK, viewDebug);
-
-function viewDebug() {
-    const coreDebugger = new CoreDebugger();
-    try {
-        coreDebugger.codeGenerate(codeEditor.getValue());
-        console.log(coreDebugger.generator.getInput());
-    } catch (e) {
-        debugView.setValue("Something went wrong with code generate. Check console F12");
-        return;
+        debugBtnId.addEventListener("click", this.viewDebug);
+        this.codeEditor.addCommand(KeyCode.US_BACKTICK, this.viewDebug);
     }
-    try {
-        const debugObject = coreDebugger.execute();
-        console.log(debugObject);
-        debugView.setValue(viewResult.process(debugObject));
-        saveCode();
-    } catch (e) {
-        debugView.setValue("Something went wrong with code execute. Check console F12");
+
+    viewDebug() {
+        const coreDebugger = new CoreDebugger();
+        try {
+            coreDebugger.codeGenerate(this.codeEditor.getValue());
+            console.log(coreDebugger.generator.getInput());
+        } catch (e) {
+            this.debugView.setValue("Something went wrong with code generate. Check console F12");
+            return;
+        }
+        try {
+            const debugObject = coreDebugger.execute();
+            console.log(debugObject);
+            this.debugView.setValue(this.viewResult.process(debugObject));
+            this.saveCode();
+        } catch (e) {
+            this.debugView.setValue("Something went wrong with code execute. Check console F12");
+        }
     }
+
+    saveCode() {
+        window.localStorage.setItem('code', this.codeEditor.getValue());
+    }
+
+    restoreCode() {
+        const restoredValue = window.localStorage.getItem('code');
+        if (restoredValue) {
+            this.codeEditor.setValue(restoredValue);
+        }
+    }
+
 }
 
-codeEditor.addCommand(KeyCode.Ctrl | KeyCode.KEY_S, saveCode);
-
-function saveCode() {
-    window.localStorage.setItem('code', codeEditor.getValue());
-}
-
-function restoreCode() {
-    const restoredValue = window.localStorage.getItem('code');
-    if (restoredValue) {
-        codeEditor.setValue(restoredValue);
-    }
-}
-
-window.addEventListener("resize", () => {
-    codeEditor.layout();
-    debugView.layout();
-});
+new Editor();
