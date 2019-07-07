@@ -9,7 +9,7 @@ export interface CodeNode {
 const prefix = "__$YD$__";
 const q = (str: string) => `'${str}'`;
 const arr = (str: string) => `[${str}]`;
-const defineFn = (funcName: string, params: PureType[]) => `${prefix}${funcName}(${params.join(',')});`;
+const defineFn = (fnName: string, params: PureType[]) => `${prefix}${fnName}(${params.join(',')});`;
 
 export const CodeGenTemplates = {
     varDeclNode(node: N<VariableDeclarator>): CodeNode {
@@ -21,15 +21,13 @@ export const CodeGenTemplates = {
     },
     identifier(node: N<Identifier>): CodeNode {
         return ({
-            code: defineFn('ident',
-                [node.loc.start.line, q(node.name), node.name]),
+            code: defineFn('ident', [node.loc.start.line, q(node.name), node.name]),
             line: node.loc.start.line,
         });
     },
     literal(node: N<Literal>): CodeNode {
         return ({
-            code: defineFn('ident',
-                [node.loc.start.line, q('return'), JSON.stringify(node.value)]),
+            code: defineFn('ident', [node.loc.start.line, q('return'), JSON.stringify(node.value)]),
             line: node.loc.start.line,
         });
     },
