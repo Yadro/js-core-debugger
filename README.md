@@ -1,5 +1,7 @@
 ![build status](https://travis-ci.com/Yadro/js-core-debugger.svg?branch=master)
 
+[Demo](http://jsdebug.surge.sh/)
+
 ### About
 This is a tool to preview JavaScript values inline without running debugging. Inspired by [demo](https://www.youtube.com/watch?v=a-OyoVcbwWE) from Bret Victor.
 
