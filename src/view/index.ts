@@ -9,6 +9,8 @@ class Editor {
     private debugView: editor.IStandaloneCodeEditor;
 
     constructor() {
+        this.viewDebug = this.viewDebug.bind(this);
+
         const editorId = document.getElementById("editor");
         const debugViewId = document.getElementById("debug-view");
         const debugBtnId = document.getElementById("debug");
@@ -44,14 +46,12 @@ class Editor {
         const coreDebugger = new CoreDebugger();
         try {
             coreDebugger.codeGenerate(this.codeEditor.getValue());
-            console.log(coreDebugger.generator.getInput());
         } catch (e) {
             this.debugView.setValue("Something went wrong with code generate. Check console F12");
             return;
         }
         try {
             const debugObject = coreDebugger.execute();
-            console.log(debugObject);
             this.debugView.setValue(this.viewResult.process(debugObject));
             this.saveCode();
         } catch (e) {
