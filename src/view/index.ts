@@ -60,3 +60,8 @@ function restoreCode() {
         codeEditor.setValue(restoredValue);
     }
 }
+
+window.addEventListener("resize", () => {
+    codeEditor.layout();
+    debugView.layout();
+});

@@ -15,8 +15,6 @@ body {
     border: 1px solid grey;
 }
 
-#debug-view,
-#editor {
+.editor {
     flex: 1;
-    height: 100%;
 }
