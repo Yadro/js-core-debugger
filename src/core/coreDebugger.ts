@@ -17,17 +17,16 @@ import {
     VariableDeclaration,
     VariableDeclarator
 } from "estree";
-import {CodeGenTemplates, CodeNode, injectPostfix, injectPrefix} from "./templates";
-import {DebugObject, N, PureType, StringMap} from "./types";
+import {CodeGenTemplates, CodeNode, injectPostfix, injectPrefix} from "../generator/templates";
+import {DebugObject, N, PureType, StringMap} from "../types";
+import {Generator} from "../generator";
 
 
 export class CoreDebugger {
-    public _input: string[];
-    public overrideVariables: StringMap<PureType> = {};
+    public generator: Generator;
 
     codeGenerate(input: string, vars: StringMap<PureType> = {}) {
-        this._input = input.split('\n');
-        this.overrideVariables = vars;
+        this.generator = new Generator(input, vars);
         const parser = new Parser({ locations: true }, input);
         const astTree = parser.parse() as unknown as N<BlockStatement>;
 
@@ -86,29 +85,12 @@ export class CoreDebugger {
         const params = node.params.filter(p => p.type === "Identifier") as N<Identifier>[];
 
         params.forEach(param => {
-            this._insertCode(CodeGenTemplates.identifier(param));
+            this.generator.insert(CodeGenTemplates.identifier(param));
         });
 
         this.processBlockStatement(node.body as N<BlockStatement>);
 
-        this.insertFunctionExecute(node, params);
-    }
-
-    private insertFunctionExecute(node: N<FunctionDeclaration>, nodes: N<Identifier>[]) {
-        const defineArguments: PureType[] = [];
-
-        nodes.forEach(p => {
-            for (let v in this.overrideVariables) {
-                const [line, name] = v.split(':');
-                const value = this.overrideVariables[v];
-                if (p.loc.start.line === +line && p.name === name) {
-                    defineArguments.push(JSON.stringify(value));
-                    break;
-                }
-            }
-        });
-
-        this._insertCode(CodeGenTemplates.runFuncForDebug(node, defineArguments));
+        this.generator.insertFunctionExecute(node, params);
     }
 
     private processExpressionStatement(node: N<ExpressionStatement>) {
@@ -118,7 +100,7 @@ export class CoreDebugger {
     private processExpression(node: N<Expression>) {
         switch (node.type) {
             case "AssignmentExpression":
-                this._insertCode(CodeGenTemplates.identifier(node.left as N<Identifier>));
+                this.generator.insert(CodeGenTemplates.identifier(node.left as N<Identifier>));
                 break;
             case "CallExpression":
                 node.arguments.forEach(arg => {
@@ -144,7 +126,7 @@ export class CoreDebugger {
         if (node.argument) {
             switch (node.argument.type) {
                 case "Identifier":
-                    this._insertCode(CodeGenTemplates.identifier(node.argument as N<Identifier>));
+                    this.generator.insert(CodeGenTemplates.identifier(node.argument as N<Identifier>));
                     break;
                 case "Literal":
                     this.processLiteral(node.argument as N<Literal>);
@@ -154,21 +136,17 @@ export class CoreDebugger {
     }
 
     private processLiteral(node: N<Literal>) {
-        this._insertCode(CodeGenTemplates.literal(node));
+        this.generator.insert(CodeGenTemplates.literal(node));
     }
     
     private processVariableDeclaration(node: N<VariableDeclaration>) {
         node.declarations.forEach(declaration => {
-            this._insertCode(CodeGenTemplates.varDeclNode(declaration as N<VariableDeclarator>))
+            this.generator.insert(CodeGenTemplates.varDeclNode(declaration as N<VariableDeclarator>))
         });
     }
 
-    private _insertCode(node: CodeNode) {
-        this._input[node.line - 1] += node.code;
-    }
-
     execute(): DebugObject {
-        let result = this._input.join('\n');
+        const result = this.generator.getInput();
         const code = `${injectPrefix}${result}\n${injectPostfix}`;
         console.log(code);
         const debug = eval(code);

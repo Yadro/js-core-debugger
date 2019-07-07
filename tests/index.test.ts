@@ -1,5 +1,6 @@
-import { CoreDebugger } from '../src';
+import { CoreDebugger } from '../src/core/coreDebugger';
 import {DebugObject} from "../src/types";
+
 const coreDebugger = new CoreDebugger();
 
 function generate(code: string): DebugObject {
@@ -7,6 +8,7 @@ function generate(code: string): DebugObject {
     return coreDebugger.execute();
 }
 
+// language=JavaScript
 const code = `function search(key, array) {
     var low = 0;
     var high = array.length - 1;
@@ -24,6 +26,7 @@ const code = `function search(key, array) {
     return 1;
 }`;
 
+// language=JavaScript
 const resultCode = `function search(key, array) {__$YD$__ident(1,'key',key);__$YD$__ident(1,'array',array);
     var low = 0;__$YD$__varDecl(2,'low',low);
     var high = array.length - 1;__$YD$__varDecl(3,'high',high);
@@ -45,7 +48,7 @@ test('Parse code', () => {
     const coreDebugger = new CoreDebugger();
     coreDebugger.codeGenerate(code);
     const expected = resultCode.concat(`__$YD$__exec(1,'search',search,[]);`);
-    expect(coreDebugger._input.join('\n')).toBe(expected);
+    expect(coreDebugger.generator.getInput()).toBe(expected);
 });
 
 test('Parse and Execute', () => {
@@ -55,7 +58,7 @@ test('Parse and Execute', () => {
         "1:array": ['a', 'b', 'c', 'd', 'e', 'f'],
     });
     const expectedCode = resultCode.concat(`__$YD$__exec(1,'search',search,["b",["a","b","c","d","e","f"]]);`);
-    expect(coreDebugger._input.join('\n')).toBe(expectedCode);
+    expect(coreDebugger.generator.getInput()).toBe(expectedCode);
 
     const result = coreDebugger.execute();
     const expected = {
@@ -155,7 +158,7 @@ function test() {
 test('Test code with object declarations', () => {
     const coreDebugger = new CoreDebugger();
     coreDebugger.codeGenerate(codeWithDeclarations);
-    expect(coreDebugger._input.join('\n')).toBe(expectedCodeWithDeclarations);
+    expect(coreDebugger.generator.getInput()).toBe(expectedCodeWithDeclarations);
 
     const result = coreDebugger.execute();
     const expected = {
