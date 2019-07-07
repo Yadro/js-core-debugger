@@ -38,7 +38,11 @@ export class Generator {
      * @param node
      */
     public insert(node: CodeNode) {
-        this.input[node.line - 1] += node.code;
+        const line = node.line - 1;
+        if (this.input[line].search(/[{;]$/) === -1) {
+            this.input[line] += ";";
+        }
+        this.input[line] += node.code;
     }
 
     public getInput(): string {

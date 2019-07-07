@@ -47,7 +47,7 @@ const resultCode = `function search(key, array) {__$YD$__ident(1,'key',key);__$Y
 test('Parse code', () => {
     const coreDebugger = new CoreDebugger();
     coreDebugger.codeGenerate(code);
-    const expected = resultCode.concat(`__$YD$__exec(1,'search',search,[]);`);
+    const expected = resultCode.concat(`;__$YD$__exec(1,'search',search,[]);`);
     expect(coreDebugger.generator.getInput()).toBe(expected);
 });
 
@@ -57,7 +57,7 @@ test('Parse and Execute', () => {
         "1:key": 'b',
         "1:array": ['a', 'b', 'c', 'd', 'e', 'f'],
     });
-    const expectedCode = resultCode.concat(`__$YD$__exec(1,'search',search,["b",["a","b","c","d","e","f"]]);`);
+    const expectedCode = resultCode.concat(`;__$YD$__exec(1,'search',search,["b",["a","b","c","d","e","f"]]);`);
     expect(coreDebugger.generator.getInput()).toBe(expectedCode);
 
     const result = coreDebugger.execute();
@@ -154,7 +154,7 @@ function test() {
     };__$YD$__varDecl(3,'c',c);
     var a = {};__$YD$__varDecl(6,'a',a);
     var b = { b: "b" };__$YD$__varDecl(7,'b',b);
-}__$YD$__exec(2,'test',test,[]);`;
+};__$YD$__exec(2,'test',test,[]);`;
 test('Test code with object declarations', () => {
     const coreDebugger = new CoreDebugger();
     coreDebugger.codeGenerate(codeWithDeclarations);
@@ -167,4 +167,33 @@ test('Test code with object declarations', () => {
         "7:b": [{"b": "b"}]
     };
     expect(result).toStrictEqual(expected);
+});
+
+
+const codeWithoutSemicolon = `
+function test() {
+    var num = 1
+    var obj = {}
+    var str = ""
+    var multiline = {
+        a: 1,
+    }
+    var fn = function() {
+    }
+}`;
+const resultCodeWithoutSemicolon = `
+function test() {
+    var num = 1;__$YD$__varDecl(3,'num',num);
+    var obj = {};__$YD$__varDecl(4,'obj',obj);
+    var str = "";__$YD$__varDecl(5,'str',str);
+    var multiline = {
+        a: 1,
+    };__$YD$__varDecl(6,'multiline',multiline);
+    var fn = function() {
+    };__$YD$__varDecl(9,'fn',fn);
+};__$YD$__exec(2,'test',test,[]);`;
+test('Test code without semicolon', () => {
+    const coreDebugger = new CoreDebugger();
+    coreDebugger.codeGenerate(codeWithoutSemicolon);
+    expect(coreDebugger.generator.getInput()).toBe(resultCodeWithoutSemicolon);
 });
