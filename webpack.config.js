@@ -28,17 +28,8 @@ module.exports = {
         path: dist,
     },
     plugins: [
-        new MonacoWebpackPlugin()
+        new MonacoWebpackPlugin({
+            languages: ["javascript"],
+        })
     ],
-    mode: "development",
-    devtool: "inline-source-map",
-    devServer: {
-        contentBase: dist,
-        compress: true,
-        port: 9000,
-        stats: {
-            chunks: false,
-            modules: false,
-        },
-    }
 };
