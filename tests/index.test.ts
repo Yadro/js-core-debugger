@@ -1,3 +1,9 @@
+
+// @ts-ignore
+global.URL.createObjectURL = jest.fn();
+const safeEvalModule = require('../src/utils/safeEval');
+safeEvalModule.safeEval = (code) => Promise.resolve(eval(code));
+
 import { CoreDebugger } from '../src/core/coreDebugger';
 import {DebugObject} from "../src/types";
 
@@ -51,7 +57,7 @@ test('Parse code', () => {
     expect(coreDebugger.generator.getInput()).toBe(expected);
 });
 
-test('Parse and Execute', () => {
+test('Parse and Execute', async () => {
     const coreDebugger = new CoreDebugger();
     coreDebugger.codeGenerate(code, {
         "1:key": 'b',
@@ -60,7 +66,7 @@ test('Parse and Execute', () => {
     const expectedCode = resultCode.concat(`;__$YD$__exec(1,'search',search,["b",["a","b","c","d","e","f"]]);`);
     expect(coreDebugger.generator.getInput()).toBe(expectedCode);
 
-    const result = coreDebugger.execute();
+    const result = await coreDebugger.execute();
     const expected = {
         "1:array": [["a", "b", "c", "d", "e", "f"]],
         "1:key": ["b"],
@@ -155,12 +161,13 @@ function test() {
     var a = {};__$YD$__varDecl(6,'a',a);
     var b = { b: "b" };__$YD$__varDecl(7,'b',b);
 };__$YD$__exec(2,'test',test,[]);`;
-test('Test code with object declarations', () => {
+
+test('Test code with object declarations', async () => {
     const coreDebugger = new CoreDebugger();
     coreDebugger.codeGenerate(codeWithDeclarations);
     expect(coreDebugger.generator.getInput()).toBe(expectedCodeWithDeclarations);
 
-    const result = coreDebugger.execute();
+    const result = await coreDebugger.execute();
     const expected = {
         "3:c": [{"с": "с"}],
         "6:a": [{}],
@@ -192,6 +199,7 @@ function test() {
     var fn = function() {
     };__$YD$__varDecl(9,'fn',fn);
 };__$YD$__exec(2,'test',test,[]);`;
+
 test('Test code without semicolon', () => {
     const coreDebugger = new CoreDebugger();
     coreDebugger.codeGenerate(codeWithoutSemicolon);
