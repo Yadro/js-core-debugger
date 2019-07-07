@@ -33,7 +33,7 @@ function viewDebug() {
     const coreDebugger = new CoreDebugger();
     try {
         coreDebugger.codeGenerate(codeEditor.getValue());
-        console.log(coreDebugger._input);
+        console.log(coreDebugger.generator.getInput());
     } catch (e) {
         debugView.setValue("Something went wrong with code generate. Check console F12");
         return;
