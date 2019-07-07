@@ -7,6 +7,7 @@ class Editor {
     private readonly viewResult = new ViewResult();
     private readonly codeEditor: editor.IStandaloneCodeEditor;
     private readonly debugView: editor.IStandaloneCodeEditor;
+    private isBlackTheme = false;
 
     constructor() {
         this.tryToShowDebugInfo = this.tryToShowDebugInfo.bind(this);
@@ -22,7 +23,10 @@ class Editor {
                 enabled: false,
             },
         });
-        this.codeEditor.addCommand(KeyCode.Ctrl | KeyCode.KEY_S, this.saveCode);
+        this.codeEditor.addCommand(KeyCode.F3, () => {
+            this.isBlackTheme = !this.isBlackTheme;
+            editor.setTheme(this.isBlackTheme ? 'vs-dark' : 'vs');
+        });
         this.debugView = editor.create(debugViewId, {
             language: "text",
             minimap: {
