@@ -30,15 +30,4 @@ module.exports = {
     plugins: [
         new MonacoWebpackPlugin()
     ],
-    mode: "development",
-    devtool: "inline-source-map",
-    devServer: {
-        contentBase: dist,
-        compress: true,
-        port: 9000,
-        stats: {
-            chunks: false,
-            modules: false,
-        },
-    }
 };
