@@ -28,6 +28,8 @@ module.exports = {
         path: dist,
     },
     plugins: [
-        new MonacoWebpackPlugin()
+        new MonacoWebpackPlugin({
+            languages: ["javascript"],
+        })
     ],
 };
