@@ -11,8 +11,8 @@ body {
     display: flex;
     flex-direction: row;
     align-items: stretch;
-    height: 90%;
-    border: 1px solid grey;
+    height: 100%;
+    box-sizing: border-box;
 }
 
 .editor {

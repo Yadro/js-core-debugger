@@ -14,7 +14,6 @@ class Editor {
 
         const editorId = document.getElementById("editor");
         const debugViewId = document.getElementById("debug-view");
-        const debugBtnId = document.getElementById("debug");
 
         this.codeEditor = editor.create(editorId, {
             value: "function hello() {\n\tvar a = 1;\n\twhile(a < 10) {\n\t\ta *= 2;\n\t}\n}",
@@ -39,8 +38,6 @@ class Editor {
             this.debugView.layout();
         });
 
-        debugBtnId.addEventListener("click", this.tryToShowDebugInfo);
-        this.codeEditor.addCommand(KeyCode.US_BACKTICK, this.tryToShowDebugInfo);
         this.handleEditorChanges();
         this.tryToShowDebugInfo();
     }
