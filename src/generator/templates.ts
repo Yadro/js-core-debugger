@@ -11,12 +11,20 @@ const q = (str: string) => `'${str}'`;
 const arr = (str: string) => `[${str}]`;
 const defineFn = (fnName: string, params: PureType[]) => `${prefix}${fnName}(${params.join(',')});`;
 
+// TODO rename to TemplateBuilder
+// TODO use switch
 export const CodeGenTemplates = {
     varDeclNode(node: N<VariableDeclarator>): CodeNode {
         const varId = node.id as Identifier;
         return ({
             code: defineFn('varDecl', [node.loc.start.line, q(varId.name), varId.name]),
             line: node.loc.end.line,
+        });
+    },
+    memberExpression(name: string, line): CodeNode {
+        return ({
+            code: defineFn('varDecl', [line, q(name), name]),
+            line,
         });
     },
     identifier(node: N<Identifier>): CodeNode {
@@ -48,6 +56,9 @@ export const CodeGenTemplates = {
 export const injectPrefix = `
 var __$YD$__result = {};
 function __$YD$__ident(line, identifier, value) {
+    if (Array.isArray(value)) {
+        value = value.slice();
+    }
     var key = '' + line + ':' + identifier;
     if (__$YD$__result[key] && Array.isArray(__$YD$__result[key])) {
         __$YD$__result[key].push(value);

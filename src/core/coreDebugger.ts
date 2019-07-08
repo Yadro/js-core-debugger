@@ -11,9 +11,11 @@ import {
     Identifier,
     IfStatement,
     Literal,
+    MemberExpression,
     Pattern,
     ReturnStatement,
     Statement,
+    Super,
     VariableDeclaration,
     VariableDeclarator
 } from "estree";
@@ -36,33 +38,46 @@ export class CoreDebugger {
 
     private processStatement(node: N<Statement>) {
         switch (node.type) {
+            case "ExpressionStatement":
+                this.processExpressionStatement(node);
+                break;
             case "BlockStatement":
                 this.processBlockStatement(node);
                 break;
-                
-            // TODO process Declaration
+            case "EmptyStatement":
+            case "DebuggerStatement":
+            case "WithStatement":
+                break;
+            case "ReturnStatement":
+                this.processReturnStatement(node);
+                break;
+            case "LabeledStatement":
+            case "BreakStatement":
+            case "ContinueStatement":
+                break;
+            case "IfStatement":
+                this.processIfStatement(node);
+                break;
+            case "SwitchStatement":
+            case "ThrowStatement":
+            case "TryStatement":
+                break;
+            case "WhileStatement":
+            case "DoWhileStatement":
+            case "ForStatement":
+                if ((node as N<ForStatement>).init) {
+                    this.processStatement((node as N<ForStatement>).init as N<BlockStatement>);
+                }
+                this.processBlockStatement(node.body as N<BlockStatement>);
+                break;
+            case "ForInStatement":
+            case "ForOfStatement":
+                break;
             case "FunctionDeclaration":
                 this.processFunctionDeclaration(node);
                 break;
             case "VariableDeclaration":
                 this.processVariableDeclaration(node);
-                break;
-            case "ExpressionStatement":
-                this.processExpressionStatement(node);
-                break;
-            case "ReturnStatement":
-                this.processReturnStatement(node);
-                break;
-            case "IfStatement":
-                this.processIfStatement(node);
-                break;
-            case "ForStatement":
-            case "WhileStatement":
-            case "DoWhileStatement":
-                if ((node as N<ForStatement>).init) {
-                    this.processStatement((node as N<ForStatement>).init as N<BlockStatement>);
-                }
-                this.processBlockStatement(node.body as N<BlockStatement>);
                 break;
         }
     }
@@ -100,27 +115,94 @@ export class CoreDebugger {
 
     private processExpression(node: N<Expression>) {
         switch (node.type) {
+            case "ArrayExpression":
+            case "ArrowFunctionExpression":
+            case "AwaitExpression":
+            case "ClassExpression":
+                // ignore it
+                break;
             case "AssignmentExpression":
-                this.generator.insert(CodeGenTemplates.identifier(node.left as N<Identifier>));
+            case "BinaryExpression":
+                this.processExpression(node.left as N<Expression>);
                 break;
             case "CallExpression":
                 node.arguments.forEach(arg => {
-                    this.processArrowFunctionExpression(arg as N<ArrowFunctionExpression>);
+                    this.processArrowFunctionExpression(arg as N<ArrowFunctionExpression>); // TODO
                 });
+                this.processExpressionOrSuper(node.callee as N<Expression>);
+                break;
+            case "ConditionalExpression":
+                break;
+            case "FunctionExpression":
+                break;
+            case "Identifier":
+                this.generator.insert(CodeGenTemplates.identifier(node));
+                break;
+            case "Literal":
+                break;
+            case "LogicalExpression":
                 break;
             case "MemberExpression":
-                throw new Error("Not implemented");
+                this.processMemberExpression(node as N<MemberExpression>);
+                break;
+            case "MetaProperty":
+                break;
+            case "NewExpression":
+                break;
+            case "ObjectExpression":
+                break;
+            case "SequenceExpression":
+                break;
+            case "TaggedTemplateExpression":
+                break;
+            case "TemplateLiteral":
+                break;
+            case "ThisExpression":
+                break;
+            case "UnaryExpression":
+                break;
+            case "UpdateExpression":
+                break;
+            case "YieldExpression":
                 break;
         }
     }
 
     private processArrowFunctionExpression(node: N<ArrowFunctionExpression>) {
-        if (node.expression) {
-            throw new Error("Not implemented");
-        }
         if (node.body) {
             this.processBlockStatement(node.body as N<BlockStatement>);
         }
+    }
+
+    private processExpressionOrSuper(node: N<Expression | Super>) {
+        if (node.type !== "Super") {
+            this.processExpression(node);
+        }
+    }
+
+    private processMemberExpression(node: N<MemberExpression>) {
+        const name = this.getMemberExpressionName(node);
+        if (typeof name === "string") {
+            this.generator.insert(CodeGenTemplates.memberExpression(name, node.loc.end.line));
+        }
+    }
+
+    private getMemberExpressionName(node: N<MemberExpression>): string | boolean {
+        if (node.object.type === "ThisExpression" && node.property.type === "Identifier") {
+            return `this.${node.property.name}`;
+        } else if (node.object.type === "Identifier" && node.property.type === "Identifier") {
+            // TODO find better way to handle it
+            if (['push', 'pop', 'shift', 'unshift', 'splice', 'sort', 'reverse'].includes(node.property.name)) {
+                return node.object.name;
+            }
+            if (['forEach'].includes(node.property.name)) {
+                return false; // Ignore this methods
+            }
+            return `${node.object.name}.${node.property.name}`;
+        } else if (node.property.type === "Identifier") {
+            return `${this.getMemberExpressionName(node.object as N<MemberExpression>)}.${node.property.name}`;
+        }
+        return "";
     }
 
     private processReturnStatement(node: N<ReturnStatement>) {

@@ -11,8 +11,12 @@ const coreDebugger = new CoreDebugger();
 
 function generate(code: string): Promise<DebugObject> {
     coreDebugger.codeGenerate(code);
+    // console.log(coreDebugger.generator.getInput());
     return coreDebugger.execute();
 }
+
+// TODO update tests
+// let resultCode = ['__$YD$__ident(1,'key',key);']; resultCode = code.split('\n').map((i, idx) => resultCode[idx] + i[idx]).join('\n');
 
 // language=JavaScript
 const code = `function search(key, array) {
@@ -127,6 +131,10 @@ const codeWithLambda = `
 function test() {
     var r = 0;
     var arr = [1, 2, 3];
+    arr.push(4);
+    arr.pop();
+    arr.shift();
+    arr.unshift(1);
     arr.forEach(i => {
         r += i;
     });
@@ -137,8 +145,12 @@ test('Test code with lambda', async () => {
     const expected = {
         "3:r": [0],
         "4:arr": [[1, 2, 3]],
-        "6:r": [1, 3, 6],
-        "8:m": [[7, 8, 9]]
+        "5:arr": [[1, 2, 3, 4]],
+        "6:arr": [[1, 2, 3]],
+        "7:arr": [[2, 3]],
+        "8:arr": [[1, 2, 3]],
+        "10:r": [1, 3, 6],
+        "12:m": [[7, 8, 9]],
     };
     expect(result).toStrictEqual(expected);
 });
@@ -204,4 +216,27 @@ test('Test code without semicolon', () => {
     const coreDebugger = new CoreDebugger();
     coreDebugger.codeGenerate(codeWithoutSemicolon);
     expect(coreDebugger.generator.getInput()).toBe(resultCodeWithoutSemicolon);
+});
+
+// language=JavaScript
+const codeWithMemberExpression = `
+function test() {
+    this.a = { b: { c: { d: 'd' } } };
+    this.a.b.c.d = 'e';
+    var a = this.a;
+    a.b.c.d = 'test';
+}`;
+// language=JavaScript
+const resultCodeWithMemberExpression = `
+function test() {
+    this.a = { b: { c: { d: 'd' } } };__$YD$__varDecl(3,'this.a',this.a);
+    this.a.b.c.d = 'e';__$YD$__varDecl(4,'this.a.b.c.d',this.a.b.c.d);
+    var a = this.a;__$YD$__varDecl(5,'a',a);
+    a.b.c.d = 'test';__$YD$__varDecl(6,'a.b.c.d',a.b.c.d);
+};__$YD$__exec(2,'test',test,[]);`;
+
+test('Test code with member expression', () => {
+    const coreDebugger = new CoreDebugger();
+    coreDebugger.codeGenerate(codeWithMemberExpression);
+    expect(coreDebugger.generator.getInput()).toBe(resultCodeWithMemberExpression);
 });
