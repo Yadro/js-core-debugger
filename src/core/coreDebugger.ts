@@ -199,10 +199,11 @@ export class CoreDebugger {
                 return false; // Ignore this methods
             }
             return `${node.object.name}.${node.property.name}`;
-        } else if (node.property.type === "Identifier") {
+        } else if (node.object.type === "MemberExpression" && node.property.type === "Identifier") {
             return `${this.getMemberExpressionName(node.object as N<MemberExpression>)}.${node.property.name}`;
+        } else {
+            return false;
         }
-        return "";
     }
 
     private processReturnStatement(node: N<ReturnStatement>) {
@@ -231,6 +232,7 @@ export class CoreDebugger {
     async execute(): Promise<DebugObject> {
         const result = this.generator.getInput();
         const code = `${injectPrefix}${result}\n${injectPostfix}`;
+        console.log(code);
         return await safeEval<DebugObject>(code);
     }
 }
