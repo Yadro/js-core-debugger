@@ -7,7 +7,7 @@ export class Generator {
     public overrideVariables: StringMap<PureType>;
 
     constructor(input: string, overrideVariables: StringMap<PureType> = {}) {
-        this.input = input.split('\n');
+        this.input = input.split(/\r?\n/);
         this.overrideVariables = overrideVariables;
     }
 
