@@ -6,13 +6,11 @@ import {
     Expression,
     ExpressionStatement,
     ForStatement,
-    Function,
     FunctionDeclaration,
     Identifier,
     IfStatement,
     Literal,
     MemberExpression,
-    Pattern,
     ReturnStatement,
     Statement,
     Super,
@@ -21,7 +19,7 @@ import {
     VariableDeclaration,
     VariableDeclarator
 } from "estree";
-import {CodeGenTemplates, CodeNode, injectPostfix, injectPrefix} from "../generator/templates";
+import {CodeGenTemplates, injectPostfix, injectPrefix} from "../generator/templates";
 import {DebugObject, N, PureType, StringMap} from "../types";
 import {Generator} from "../generator";
 import {safeEval} from "../utils/safeEval";
@@ -91,6 +89,55 @@ export class CoreDebugger {
         }
     }
 
+    private processExpression(node: N<Expression>) {
+        switch (node.type) {
+            case "ArrayExpression":
+            case "ArrowFunctionExpression":
+            case "AwaitExpression":
+            case "ClassExpression":
+            case "MetaProperty": // ??
+            case "TaggedTemplateExpression": // ??
+            case "NewExpression":
+            case "SequenceExpression": // ??
+            case "ObjectExpression":
+            case "ThisExpression":
+            case "UnaryExpression":
+                // ignore it
+                break;
+            case "AssignmentExpression":
+            case "BinaryExpression":
+                this.processExpression(node.left as N<Expression>);
+                break;
+            case "CallExpression":
+                node.arguments.forEach(arg => {
+                    this.processArrowFunctionExpression(arg as N<ArrowFunctionExpression>); // TODO
+                });
+                this.processExpressionOrSuper(node.callee as N<Expression>);
+                break;
+            case "ConditionalExpression":
+                break;
+            case "FunctionExpression":
+                break;
+            case "Identifier":
+                this.generator.insert(CodeGenTemplates.identifier(node));
+                break;
+            case "Literal":
+                this.generator.insert(CodeGenTemplates.literal(node));
+                break;
+            case "LogicalExpression":
+                break;
+            case "MemberExpression":
+                this.processMemberExpression(node as N<MemberExpression>);
+                break;
+            case "TemplateLiteral":
+                break;
+            case "UpdateExpression":
+                break;
+            case "YieldExpression":
+                break;
+        }
+    }
+
     private processBlockStatement(node: N<BlockStatement>) {
         if (node.body) {
             node.body.forEach(body => {
@@ -140,55 +187,6 @@ export class CoreDebugger {
 
     private processExpressionStatement(node: N<ExpressionStatement>) {
         this.processExpression(node.expression as N<Expression>);
-    }
-
-    private processExpression(node: N<Expression>) {
-        switch (node.type) {
-            case "ArrayExpression":
-            case "ArrowFunctionExpression":
-            case "AwaitExpression":
-            case "ClassExpression":
-            case "MetaProperty": // ??
-            case "TaggedTemplateExpression": // ??
-            case "NewExpression":
-            case "SequenceExpression": // ??
-            case "ObjectExpression":
-            case "ThisExpression":
-            case "UnaryExpression":
-                // ignore it
-                break;
-            case "AssignmentExpression":
-            case "BinaryExpression":
-                this.processExpression(node.left as N<Expression>);
-                break;
-            case "CallExpression":
-                node.arguments.forEach(arg => {
-                    this.processArrowFunctionExpression(arg as N<ArrowFunctionExpression>); // TODO
-                });
-                this.processExpressionOrSuper(node.callee as N<Expression>);
-                break;
-            case "ConditionalExpression":
-                break;
-            case "FunctionExpression":
-                break;
-            case "Identifier":
-                this.generator.insert(CodeGenTemplates.identifier(node));
-                break;
-            case "Literal":
-                this.generator.insert(CodeGenTemplates.literal(node));
-                break;
-            case "LogicalExpression":
-                break;
-            case "MemberExpression":
-                this.processMemberExpression(node as N<MemberExpression>);
-                break;
-            case "TemplateLiteral":
-                break;
-            case "UpdateExpression":
-                break;
-            case "YieldExpression":
-                break;
-        }
     }
 
     private processArrowFunctionExpression(node: N<ArrowFunctionExpression>) {
