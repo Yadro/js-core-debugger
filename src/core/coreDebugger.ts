@@ -87,6 +87,10 @@ export class CoreDebugger {
                 break;
             case "ForInStatement":
             case "ForOfStatement":
+                if (node.left.type === "VariableDeclaration") {
+                    this.processVariableDeclaration(node.left as N<VariableDeclaration>);
+                }
+                this.processBlockStatement(node.body as N<BlockStatement>);
                 break;
             case "FunctionDeclaration":
                 this.processFunctionDeclaration(node);
