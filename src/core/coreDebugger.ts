@@ -148,6 +148,13 @@ export class CoreDebugger {
             case "ArrowFunctionExpression":
             case "AwaitExpression":
             case "ClassExpression":
+            case "MetaProperty": // ??
+            case "TaggedTemplateExpression": // ??
+            case "NewExpression":
+            case "SequenceExpression": // ??
+            case "ObjectExpression":
+            case "ThisExpression":
+            case "UnaryExpression":
                 // ignore it
                 break;
             case "AssignmentExpression":
@@ -168,27 +175,14 @@ export class CoreDebugger {
                 this.generator.insert(CodeGenTemplates.identifier(node));
                 break;
             case "Literal":
+                this.generator.insert(CodeGenTemplates.literal(node));
                 break;
             case "LogicalExpression":
                 break;
             case "MemberExpression":
                 this.processMemberExpression(node as N<MemberExpression>);
                 break;
-            case "MetaProperty":
-                break;
-            case "NewExpression":
-                break;
-            case "ObjectExpression":
-                break;
-            case "SequenceExpression":
-                break;
-            case "TaggedTemplateExpression":
-                break;
             case "TemplateLiteral":
-                break;
-            case "ThisExpression":
-                break;
-            case "UnaryExpression":
                 break;
             case "UpdateExpression":
                 break;
@@ -237,21 +231,10 @@ export class CoreDebugger {
 
     private processReturnStatement(node: N<ReturnStatement>) {
         if (node.argument) {
-            switch (node.argument.type) {
-                case "Identifier":
-                    this.generator.insert(CodeGenTemplates.identifier(node.argument as N<Identifier>));
-                    break;
-                case "Literal":
-                    this.processLiteral(node.argument as N<Literal>);
-                    break;
-            }
+            this.processExpression(node.argument as N<Expression>);
         }
     }
 
-    private processLiteral(node: N<Literal>) {
-        this.generator.insert(CodeGenTemplates.literal(node));
-    }
-    
     private processVariableDeclaration(node: N<VariableDeclaration>) {
         node.declarations.forEach(declaration => {
             this.generator.insert(CodeGenTemplates.varDeclNode(declaration as N<VariableDeclarator>))
