@@ -6,18 +6,20 @@ import {
     Expression,
     ExpressionStatement,
     ForStatement,
-    Function,
     FunctionDeclaration,
     Identifier,
     IfStatement,
     Literal,
-    Pattern,
+    MemberExpression,
     ReturnStatement,
     Statement,
+    Super,
+    SwitchStatement,
+    TryStatement,
     VariableDeclaration,
     VariableDeclarator
 } from "estree";
-import {CodeGenTemplates, CodeNode, injectPostfix, injectPrefix} from "../generator/templates";
+import {CodeGenTemplates, injectPostfix, injectPrefix} from "../generator/templates";
 import {DebugObject, N, PureType, StringMap} from "../types";
 import {Generator} from "../generator";
 import {safeEval} from "../utils/safeEval";
@@ -36,19 +38,20 @@ export class CoreDebugger {
 
     private processStatement(node: N<Statement>) {
         switch (node.type) {
-            case "BlockStatement":
-                this.processBlockStatement(node);
-                break;
-                
-            // TODO process Declaration
-            case "FunctionDeclaration":
-                this.processFunctionDeclaration(node);
-                break;
-            case "VariableDeclaration":
-                this.processVariableDeclaration(node);
+            case "EmptyStatement":
+            case "DebuggerStatement":
+            case "WithStatement":
+            case "LabeledStatement":
+            case "BreakStatement":
+            case "ContinueStatement":
+            case "ThrowStatement":
+                // ignore
                 break;
             case "ExpressionStatement":
                 this.processExpressionStatement(node);
+                break;
+            case "BlockStatement":
+                this.processBlockStatement(node);
                 break;
             case "ReturnStatement":
                 this.processReturnStatement(node);
@@ -56,13 +59,81 @@ export class CoreDebugger {
             case "IfStatement":
                 this.processIfStatement(node);
                 break;
-            case "ForStatement":
+            case "SwitchStatement":
+                this.processSwitchStatement(node);
+                break;
+            case "TryStatement":
+                this.processTryStatement(node);
+                break;
             case "WhileStatement":
             case "DoWhileStatement":
+            case "ForStatement":
                 if ((node as N<ForStatement>).init) {
                     this.processStatement((node as N<ForStatement>).init as N<BlockStatement>);
                 }
                 this.processBlockStatement(node.body as N<BlockStatement>);
+                break;
+            case "ForInStatement":
+            case "ForOfStatement":
+                if (node.left.type === "VariableDeclaration") {
+                    this.processVariableDeclaration(node.left as N<VariableDeclaration>);
+                }
+                this.processBlockStatement(node.body as N<BlockStatement>);
+                break;
+            case "FunctionDeclaration":
+                this.processFunctionDeclaration(node);
+                break;
+            case "VariableDeclaration":
+                this.processVariableDeclaration(node);
+                break;
+        }
+    }
+
+    private processExpression(node: N<Expression>) {
+        switch (node.type) {
+            case "ArrayExpression":
+            case "ArrowFunctionExpression":
+            case "AwaitExpression":
+            case "ClassExpression":
+            case "MetaProperty": // ??
+            case "TaggedTemplateExpression": // ??
+            case "NewExpression":
+            case "SequenceExpression": // ??
+            case "ObjectExpression":
+            case "ThisExpression":
+            case "UnaryExpression":
+                // ignore it
+                break;
+            case "AssignmentExpression":
+            case "BinaryExpression":
+                this.processExpression(node.left as N<Expression>);
+                break;
+            case "CallExpression":
+                node.arguments.forEach(arg => {
+                    this.processArrowFunctionExpression(arg as N<ArrowFunctionExpression>); // TODO
+                });
+                this.processExpressionOrSuper(node.callee as N<Expression>);
+                break;
+            case "ConditionalExpression":
+                break;
+            case "FunctionExpression":
+                break;
+            case "Identifier":
+                this.generator.insert(CodeGenTemplates.identifier(node));
+                break;
+            case "Literal":
+                this.generator.insert(CodeGenTemplates.literal(node));
+                break;
+            case "LogicalExpression":
+                break;
+            case "MemberExpression":
+                this.processMemberExpression(node as N<MemberExpression>);
+                break;
+            case "TemplateLiteral":
+                break;
+            case "UpdateExpression":
+                break;
+            case "YieldExpression":
                 break;
         }
     }
@@ -72,6 +143,26 @@ export class CoreDebugger {
             node.body.forEach(body => {
                 this.processStatement(body as N<Statement>);
             })
+        }
+    }
+
+    private processSwitchStatement(node: N<SwitchStatement>) {
+        node.cases.forEach($case => {
+            $case.consequent.forEach(node => {
+                // TODO "case 1:var a=1;break;" won't works
+                this.processStatement(node as N<Statement>);
+            });
+        });
+    }
+
+    private processTryStatement(node: N<TryStatement>) {
+        this.processBlockStatement(node.block as N<BlockStatement>);
+        if (node.handler) {
+            // TODO node.handler.param
+            this.processBlockStatement(node.handler.body as N<BlockStatement>);
+        }
+        if (node.finalizer) {
+            this.processBlockStatement(node.finalizer as N<BlockStatement>);
         }
     }
 
@@ -98,48 +189,50 @@ export class CoreDebugger {
         this.processExpression(node.expression as N<Expression>);
     }
 
-    private processExpression(node: N<Expression>) {
-        switch (node.type) {
-            case "AssignmentExpression":
-                this.generator.insert(CodeGenTemplates.identifier(node.left as N<Identifier>));
-                break;
-            case "CallExpression":
-                node.arguments.forEach(arg => {
-                    this.processArrowFunctionExpression(arg as N<ArrowFunctionExpression>);
-                });
-                break;
-            case "MemberExpression":
-                throw new Error("Not implemented");
-                break;
-        }
-    }
-
     private processArrowFunctionExpression(node: N<ArrowFunctionExpression>) {
-        if (node.expression) {
-            throw new Error("Not implemented");
-        }
         if (node.body) {
             this.processBlockStatement(node.body as N<BlockStatement>);
         }
     }
 
-    private processReturnStatement(node: N<ReturnStatement>) {
-        if (node.argument) {
-            switch (node.argument.type) {
-                case "Identifier":
-                    this.generator.insert(CodeGenTemplates.identifier(node.argument as N<Identifier>));
-                    break;
-                case "Literal":
-                    this.processLiteral(node.argument as N<Literal>);
-                    break;
-            }
+    private processExpressionOrSuper(node: N<Expression | Super>) {
+        if (node.type !== "Super") {
+            this.processExpression(node);
         }
     }
 
-    private processLiteral(node: N<Literal>) {
-        this.generator.insert(CodeGenTemplates.literal(node));
+    private processMemberExpression(node: N<MemberExpression>) {
+        const name = this.getMemberExpressionName(node);
+        if (typeof name === "string") {
+            this.generator.insert(CodeGenTemplates.memberExpression(name, node.loc.end.line));
+        }
     }
-    
+
+    private getMemberExpressionName(node: N<MemberExpression>): string | boolean {
+        if (node.object.type === "ThisExpression" && node.property.type === "Identifier") {
+            return `this.${node.property.name}`;
+        } else if (node.object.type === "Identifier" && node.property.type === "Identifier") {
+            // TODO find better way to handle it
+            if (['push', 'pop', 'shift', 'unshift', 'splice', 'sort', 'reverse'].includes(node.property.name)) {
+                return node.object.name;
+            }
+            if (['forEach'].includes(node.property.name)) {
+                return false; // Ignore this methods
+            }
+            return `${node.object.name}.${node.property.name}`;
+        } else if (node.object.type === "MemberExpression" && node.property.type === "Identifier") {
+            return `${this.getMemberExpressionName(node.object as N<MemberExpression>)}.${node.property.name}`;
+        } else {
+            return false;
+        }
+    }
+
+    private processReturnStatement(node: N<ReturnStatement>) {
+        if (node.argument) {
+            this.processExpression(node.argument as N<Expression>);
+        }
+    }
+
     private processVariableDeclaration(node: N<VariableDeclaration>) {
         node.declarations.forEach(declaration => {
             this.generator.insert(CodeGenTemplates.varDeclNode(declaration as N<VariableDeclarator>))
