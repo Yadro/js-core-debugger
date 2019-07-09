@@ -38,29 +38,38 @@ export class CoreDebugger {
 
     private processStatement(node: N<Statement>) {
         switch (node.type) {
+            case "EmptyStatement":
+            case "DebuggerStatement":
+            case "WithStatement":
+            case "LabeledStatement":
+            case "BreakStatement":
+            case "ContinueStatement":
+                // ignore
+                break;
             case "ExpressionStatement":
                 this.processExpressionStatement(node);
                 break;
             case "BlockStatement":
                 this.processBlockStatement(node);
                 break;
-            case "EmptyStatement":
-            case "DebuggerStatement":
-            case "WithStatement":
-                break;
             case "ReturnStatement":
                 this.processReturnStatement(node);
-                break;
-            case "LabeledStatement":
-            case "BreakStatement":
-            case "ContinueStatement":
                 break;
             case "IfStatement":
                 this.processIfStatement(node);
                 break;
             case "SwitchStatement":
             case "ThrowStatement":
+                break;
             case "TryStatement":
+                this.processBlockStatement(node.block as N<BlockStatement>);
+                if (node.handler) {
+                    // TODO node.handler.param
+                    this.processBlockStatement(node.handler.body as N<BlockStatement>);
+                }
+                if (node.finalizer) {
+                    this.processBlockStatement(node.finalizer as N<BlockStatement>);
+                }
                 break;
             case "WhileStatement":
             case "DoWhileStatement":
