@@ -44,6 +44,7 @@ export class CoreDebugger {
             case "LabeledStatement":
             case "BreakStatement":
             case "ContinueStatement":
+            case "ThrowStatement":
                 // ignore
                 break;
             case "ExpressionStatement":
@@ -59,7 +60,12 @@ export class CoreDebugger {
                 this.processIfStatement(node);
                 break;
             case "SwitchStatement":
-            case "ThrowStatement":
+                node.cases.forEach($case => {
+                    $case.consequent.forEach(node => {
+                        // TODO "case 1:var a=1;break;" won't works
+                        this.processStatement(node as N<Statement>);
+                    });
+                });
                 break;
             case "TryStatement":
                 this.processBlockStatement(node.block as N<BlockStatement>);
