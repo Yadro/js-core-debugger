@@ -16,6 +16,8 @@ import {
     ReturnStatement,
     Statement,
     Super,
+    SwitchStatement,
+    TryStatement,
     VariableDeclaration,
     VariableDeclarator
 } from "estree";
@@ -60,22 +62,10 @@ export class CoreDebugger {
                 this.processIfStatement(node);
                 break;
             case "SwitchStatement":
-                node.cases.forEach($case => {
-                    $case.consequent.forEach(node => {
-                        // TODO "case 1:var a=1;break;" won't works
-                        this.processStatement(node as N<Statement>);
-                    });
-                });
+                this.processSwitchStatement(node);
                 break;
             case "TryStatement":
-                this.processBlockStatement(node.block as N<BlockStatement>);
-                if (node.handler) {
-                    // TODO node.handler.param
-                    this.processBlockStatement(node.handler.body as N<BlockStatement>);
-                }
-                if (node.finalizer) {
-                    this.processBlockStatement(node.finalizer as N<BlockStatement>);
-                }
+                this.processTryStatement(node);
                 break;
             case "WhileStatement":
             case "DoWhileStatement":
@@ -106,6 +96,26 @@ export class CoreDebugger {
             node.body.forEach(body => {
                 this.processStatement(body as N<Statement>);
             })
+        }
+    }
+
+    private processSwitchStatement(node: N<SwitchStatement>) {
+        node.cases.forEach($case => {
+            $case.consequent.forEach(node => {
+                // TODO "case 1:var a=1;break;" won't works
+                this.processStatement(node as N<Statement>);
+            });
+        });
+    }
+
+    private processTryStatement(node: N<TryStatement>) {
+        this.processBlockStatement(node.block as N<BlockStatement>);
+        if (node.handler) {
+            // TODO node.handler.param
+            this.processBlockStatement(node.handler.body as N<BlockStatement>);
+        }
+        if (node.finalizer) {
+            this.processBlockStatement(node.finalizer as N<BlockStatement>);
         }
     }
 
