@@ -1,6 +1,7 @@
 import { editor, KeyCode } from 'monaco-editor/esm/vs/editor/editor.api';
 import {CoreDebugger} from "../core/coreDebugger";
 import {ViewResult} from "../core/viewResult";
+import { createRunFnDecorator } from "./deltaDecorators";
 
 
 class Editor {
@@ -33,6 +34,7 @@ class Editor {
                 enabled: false,
             },
             readOnly: true,
+            glyphMargin: true,
         });
 
         this.restoreCode();
@@ -76,6 +78,7 @@ class Editor {
         try {
             const debugObject = await coreDebugger.execute();
             this.debugView.setValue(this.viewResult.process(debugObject));
+            this.debugView.deltaDecorations([], [createRunFnDecorator(1)])
             this.saveCode();
             return;
         } catch (e) {

@@ -18,3 +18,11 @@ body {
 .editor {
     flex: 1;
 }
+
+.glyph-run-fn {
+    width: 0 !important;
+    height: 0 !important;
+    border-style: solid;
+    border-width: 7.5px 0 7.5px 10px;
+    border-color: transparent transparent transparent #007bff;
+}
