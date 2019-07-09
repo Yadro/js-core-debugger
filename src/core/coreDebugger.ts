@@ -242,7 +242,6 @@ export class CoreDebugger {
     async execute(): Promise<DebugObject> {
         const result = this.generator.getInput();
         const code = `${injectPrefix}${result}\n${injectPostfix}`;
-        console.log(code);
         return await safeEval<DebugObject>(code);
     }
 }
