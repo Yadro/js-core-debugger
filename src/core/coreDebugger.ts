@@ -3,10 +3,12 @@ import {
     ArrowFunctionExpression,
     AssignmentExpression,
     BlockStatement,
+    ClassDeclaration,
     Expression,
     ExpressionStatement,
     ForStatement,
     FunctionDeclaration,
+    FunctionExpression,
     Identifier,
     IfStatement,
     Literal,
@@ -85,6 +87,9 @@ export class CoreDebugger {
                 break;
             case "VariableDeclaration":
                 this.processVariableDeclaration(node);
+                break;
+            case "ClassDeclaration":
+                this.processClassDeclaration(node);
                 break;
         }
     }
@@ -183,6 +188,16 @@ export class CoreDebugger {
         this.processBlockStatement(node.body as N<BlockStatement>);
 
         this.generator.insertFunctionExecute(node, params);
+    }
+
+    private processClassDeclaration(node: N<ClassDeclaration>) {
+        node.body.body.forEach(n => {
+            this.processFunctionExpression(n.value as N<FunctionExpression>);
+        });
+    }
+
+    private processFunctionExpression(node: N<FunctionExpression>) {
+        this.processBlockStatement(node.body as N<BlockStatement>);
     }
 
     private processExpressionStatement(node: N<ExpressionStatement>) {

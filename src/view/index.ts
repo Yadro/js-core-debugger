@@ -28,7 +28,7 @@ class Editor {
             editor.setTheme(this.isBlackTheme ? 'vs-dark' : 'vs');
         });
         this.debugView = editor.create(debugViewId, {
-            language: "text",
+            language: "javascript",
             minimap: {
                 enabled: false,
             },
